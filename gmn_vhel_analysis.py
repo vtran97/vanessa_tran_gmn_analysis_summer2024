@@ -1,5 +1,5 @@
 '''
-GMN datamining 
+GMN datamining :)
 
 Vanessa Tran (vtran97@uwo.ca)
 May 1st to August 16 (2024)
