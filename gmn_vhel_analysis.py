@@ -1,8 +1,12 @@
 '''
-GMN datamining :)
+GMN datamining 
 
 Vanessa Tran (vtran97@uwo.ca)
 May 1st to August 16 (2024)
+
+This file searches through the entire GMN database and searches for potential interstellar meteors. 
+
+Conditions arguments can be inputted to narrow/broaden the search. print statements separate and optional.
 '''
 
 # -----------------------------------------------------------------------------------------------------------
@@ -39,77 +43,131 @@ white_viridis = LinearSegmentedColormap.from_list('white_viridis', [
 # this helps to automatically create a list of all the years in the system so that
 # you don't have to loop through them all manually
 
-# beginning of all data of GMN
-year = 2018
+def get_all_months_list():
+    # returns a list of all months that the GMN has been active -- used to acccess data through GMN database
 
-all_months = []
+    # beginning of all data of GMN
+    year = 2018
 
-# Get the current mo
-x = str(datetime.now().date()).split("-")
-current_month = x[0] + "-" + x[1] 
-year_list = []
-start = "2018-12"
-current_month 
+    all_months = []
 
-for year in range(int(start.split("-")[0]), int(current_month.split("-")[0]) + 1):
-    year_list.append(year)
+    # Get the current mo
+    x = str(datetime.now().date()).split("-")
+    current_month = x[0] + "-" + x[1] 
+    year_list = []
+    start = "2018-12"
+    current_month 
 
-for year_no in range(len(year_list)):
+    for year in range(int(start.split("-")[0]), int(current_month.split("-")[0]) + 1):
+        year_list.append(year)
 
-    # this just allows the computer see the correct year instead of using index
-    year = year_no + 2018
+    for year_no in range(len(year_list)):
 
-    if year == 2018:
-        # special case, only one month 
-        all_months.append(['2018-12'])
+        # this just allows the computer see the correct year instead of using index
+        year = year_no + 2018
 
-    elif year == int(current_month.split("-")[0]):
-        # for all months after leading up to current date for the current year 
+        if year == 2018:
+            # special case, only one month and should never change (unless we build a time machine)
+            all_months.append(['2018-12'])
 
-        year_month_list = [] # full list
-        cut_list = [] # list for the cut off year
-        done = False
+        else:
+            # for all months after leading up to current date for the current year 
 
-        for month in range(1, 13):
+            year_month_list = [] # full list
+            cut_list = [] # list for the cut off year
+            done = False # used for later for cut list
 
-            if month in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
-                month_name = str(year) + '-0' + str(month)
-                year_month_list.append(month_name)
+            for month in range(1, 13):
 
-            else: # months 10, 11, 12
-                month_name = str(year) + "-" + str(month)
-                year_month_list.append(month_name)
+                if month in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
+                    month_name = str(year) + '-0' + str(month)
+                    year_month_list.append(month_name)
 
-        while not done:
+                else: # months 10, 11, 12
+                    month_name = str(year) + "-" + str(month)
+                    year_month_list.append(month_name)
+            
+            if year != int(current_month.split("-")[0]): # if the year is not the current year
+                all_months.append(year_month_list)
+            
+            else: # if the year is the current year
+                # need to shorten the lsit to find the months up to this point that we can analyse 
+                # (not getting results from the future)
 
-            for i in range(len(year_month_list)):
-                # print(year_month_list[i])
-                if year_month_list[i] == current_month:
-                    cut_list.append(year_month_list[i])
-                    done = True
-                if year_month_list[i] != current_month and done == False:
-                    cut_list.append(year_month_list[i])
+                while not done:
+                    for i in range(len(year_month_list)):
+                        if year_month_list[i] == current_month:
+                            cut_list.append(year_month_list[i])
+                            done = True
+                        if year_month_list[i] != current_month and done == False:
+                            cut_list.append(year_month_list[i])
 
-        all_months.append(cut_list)
+                all_months.append(cut_list)
 
-    else: # year is not start or end year
-
-        year_month_list = [] # full list (works for full year)
-
-        for month in range(1, 13):
-
-            if month in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
-                month_name = str(year) + '-0' + str(month)
-                year_month_list.append(month_name)
-
-            else: # months 10, 11, 12
-                month_name = str(year) + "-" + str(month)
-                year_month_list.append(month_name)
-
-        all_months.append(year_month_list)
+    # return list in form [[months from 2018], [months from 2019], [months from 2020], etc...]
+    return all_months
 
 # -----------------------------------------------------------------------------------------------------------
-# datamining begins here
+# printing output in python - can be edited to show more 
+
+def print_output(value=0, value_cutoff=5, 
+                 vhel=0, vhel_cutoff=50, 
+                 vhel_sigma=0, 
+                 vinit=0, vinit_cutoff=50, 
+                 qc=0, 
+                 identifier=""):
+
+    # prints the output give the above parameters
+    output = ""
+    if value > value_cutoff and vhel > vhel_cutoff and vinit < vinit_cutoff:
+
+                ''' 
+                # not needed right now -- modified to never have sigma = 0 entries 
+                if vhel_sigma_mod[number] == 0:
+                    output += "||SIGMA = ZERO|| "
+                else:
+                    output += "                 "
+                '''
+
+                output += "||IDENTITY: " + str(identifier) + "|| "
+
+                if len(str(vhel)) == 7: # strings too short
+                    text = str(vhel) + '0'
+                    output += "||SPEED (VHEL): " + text + "|| "
+                else: 
+                    output += "||SPEED (VHEL): " + str(vhel) + "|| "
+
+                if vhel_sigma != 0:
+                    txt = str(vhel_sigma)
+                    if len(txt) != 6:
+                        while len(txt) != 6:
+                            txt += '0'
+                    output += "||SIGMA (VHEL): " + txt + "|| "
+
+                output += "||QC: " + str(qc) + "|| "
+
+                output += "||VALUE: " + str(value) + "||"
+
+                print(output)
+
+# -----------------------------------------------------------------------------------------------------------
+# checking conditions
+
+def check_conditions(value, value_cutoff,
+                     vhel, vhel_cutoff, 
+                     vhel_sigma,
+                     vinit, vinit_cutoff):
+    if value > value_cutoff and vhel_sigma !=0 and vhel > vhel_cutoff and vinit < vinit_cutoff:
+        return True
+    else:
+        return False
+
+# -----------------------------------------------------------------------------------------------------------
+# DATAMINING BEGINS HERE
+# -----------------------------------------------------------------------------------------------------------
+
+# calling function 
+all_months = get_all_months_list()
 
 # system lists for whichever parameters we decide to edit 
 system_best_identifiers = []
@@ -117,14 +175,13 @@ system_vinit = []
 system_calc = []
 system_qc = []
 
-# for looping through all the years an displaying what year it is in python print --> kinda jank but it is what it is 
+# for looping through all the years an displaying what year it is in python print
 year = 2018
 
+# looping through all years
 for month_list in all_months:
 
-    print("\n************")
-    print(f"YEAR : {year}")
-    print("************")
+    print(f"\n************\nYEAR : {year}\n************")
 
     # lists to be reste for each year :D
     calculation_best_data_greater_than_50 =  []
@@ -132,6 +189,7 @@ for month_list in all_months:
     best_data_identifiers = []
     best_qc = []
 
+    # looping through each month in the year
     for month in month_list:
 
         # Analyse recorded meteor data monthly 
@@ -142,25 +200,23 @@ for month_list in all_months:
 
         # all lists 
         identifiers = []
-        vhel_larger_than42 = []
+        vhel_larger_than_42 = []
         vhel_sigma = []
-        vhel_var = []
         vinit = []
         vinit_sigma = []
-        vinit_var = []
         qc = []
 
         # iterating through the traj_df using vhel 
         index = 0
         for vhel in traj_df['Vhel (km/s)']:
 
-            if vhel > 42:
+            if vhel > 42 and vhel - traj_df['+/- (sigma.7)'][index] > 42:
 
                 # identifiers
                 identifiers.append(traj_df.index[index])
                 
                 # vhel 
-                vhel_larger_than42.append(vhel)
+                vhel_larger_than_42.append(vhel)
 
                 # vhel sigma 
                 vhel_sigma.append(traj_df['+/- (sigma.7)'][index])
@@ -178,107 +234,33 @@ for month_list in all_months:
 
         # -----------------------------------------------------------------------------------------------------------
         # creating scatterplots
-        
-        # ( sigma_vhel / (vhel-42) ) vs vhel 
-        # sorting by seeing which have the largest and smallest errors with greatest vhel 
 
-        identity_vhel_larger_than_42_and_errbars_above_42 = []
-        vhel_larger_than_42_and_errbars_above_42 = []
-        vhel_sigma_mod = [] # mod = modified
-        vinit_mod = []
-        vinit_sigma_mod = []
-        qc_mod = []
-
-        # checking if error bars are above 42 as base (increased filtering)
-        for j in range(len(vhel_larger_than42)):
-            if vhel_larger_than42[j] - vhel_sigma[j] > 42 :
-
-                # idenitites 
-                identity_vhel_larger_than_42_and_errbars_above_42.append(identifiers[j])
-                
-                # vhel + sigma
-                vhel_larger_than_42_and_errbars_above_42.append(vhel_larger_than42[j])
-                vhel_sigma_mod.append(vhel_sigma[j])
-                
-                # vinit + sigma 
-                vinit_mod.append(vinit[j])
-                vinit_sigma_mod.append(vinit_sigma[j])
-
-                # qc
-                qc_mod.append(qc[j])
-
-        '''
-        # MONTHLY GRAPH - ONLY VERTICAL ERROR BARS (no horizontal)
-        plt.errorbar(vinit_mod, vhel_larger_than_42_and_errbars_above_42, vhel_sigma_mod, 0, 'x', 'red')
-
-        plt.axhline(42, c='green')
-
-        plt.title(f'vhel (km/s) vs vinit (km/s) for {month}')
-        plt.ylabel('vhel (km/s)')
-        plt.xlabel('vinit (km/s)')
-
-        plt.show()
-        '''
-        # (vhel-42) / sigma vhel as a measurement (y axis) --> this can be merged to clean up the code, but is separate for now 
+        # (vhel-42) / sigma vhel as a measurement (y axis) RATIO
         # it is a ratio to see ho many errors bars above 42 that meteor is (vhel)
 
-        computation = []
+        for number in range(len(vhel_larger_than_42)):
+            value = (vhel_larger_than_42[number] - 42) / vhel_sigma[number]
 
-        for number in range(len(vhel_larger_than_42_and_errbars_above_42)):
-            value = (vhel_larger_than_42_and_errbars_above_42[number] - 42) / vhel_sigma_mod[number]
-            computation.append(value)
-
-            # getting only the best data (list outside loop) MODIFIED TO GET ONLY NON-0 ENTRIES AND VHEL > 50, VINIT < 50
-            if value > 5 and vhel_sigma_mod[number] != 0 and vhel_larger_than_42_and_errbars_above_42[number] > 50 and vinit_mod[number] < 50 :
+            # getting only the best data with inputted conditions
+            if check_conditions(value, 5,
+                    vhel_larger_than_42[number], 50,
+                    vhel_sigma[number], 
+                    vinit[number], 50) :
+                
                 calculation_best_data_greater_than_50.append(value)
-                vinit_best_data_for_plot.append(vinit_mod[number])
-                best_data_identifiers.append(identity_vhel_larger_than_42_and_errbars_above_42[number])
-                best_qc.append(qc_mod[number])
+                vinit_best_data_for_plot.append(vinit[number])
+                best_data_identifiers.append(identifiers[number])
+                best_qc.append(qc[number])
 
             # OUTPUT - modifiable 
             output = ""
-            if value > 5 and vhel_larger_than_42_and_errbars_above_42[number] > 50 and vinit_mod[number] < 50:
+            print_output(value, 5,
+                         vhel_larger_than_42[number], 50, 
+                         vhel_sigma[number], 
+                         vinit[number], 50,
+                         qc[number], 
+                         identifiers[number])
 
-                ''' 
-                # not needed right now -- modified to never have sigma = 0 entries 
-                if vhel_sigma_mod[number] == 0:
-                    output += "||SIGMA = ZERO|| "
-                else:
-                    output += "                 "
-                '''
-
-                output += "||IDENTITY: " + str(identity_vhel_larger_than_42_and_errbars_above_42[number]) + "|| "
-
-                if len(str(vhel_larger_than_42_and_errbars_above_42[number])) == 7:
-                    text = str(vhel_larger_than_42_and_errbars_above_42[number]) + '0'
-                    output += "||SPEED (VHEL): " + text + "|| "
-                else: 
-                    output += "||SPEED (VHEL): " + str(vhel_larger_than_42_and_errbars_above_42[number]) + "|| "
-
-                if vhel_sigma_mod[number] != 0:
-                    txt = str(vhel_sigma_mod[number])
-                    if len(txt) != 6:
-                        while len(txt) != 6:
-                            txt += '0'
-                    output += "||SIGMA (VHEL): " + txt + "|| "
-
-                output += "||QC: " + str(qc_mod[number]) + "|| "
-
-                output += "||VALUE: " + str(value) + "||"
-
-                print(output)
-
-        '''
-        # MONTHLY GRAPHS
-        plt.errorbar(vinit_mod, computation, 0, 0, 'x')
-
-        plt.axhline(5, c='green')
-        plt.title(f'[(vhel - 42) / sigma] vs vinit (km/s) {month}')
-        plt.ylabel('[(vhel - 42) / sigma]')
-        plt.xlabel('vinit (km/s)')
-
-        plt.show()
-        '''
     '''
     # YEARLY GRAPHS
     plt.errorbar(vinit_best_data_for_plot, calculation_best_data_greater_than_50, 0, 0, 'x')
@@ -304,7 +286,7 @@ for month_list in all_months:
 
 # -----------------------------------------------------------------------------------------------------------
 '''
-# SYSTEM GRAPH - SCATTERPLOT
+# SYSTEM GRAPH - NORMAL SCATTERPLOT
 plt.scatter(system_vinit, system_calc)  
 
 plt.axhline(50, c='green')
@@ -320,13 +302,20 @@ plt.show()
 # -----------------------------------------------------------------------------------------------------------
 # GRAPH SORTED BY QC
 
-d = {'Vinit (km/s)'           : tuple(system_vinit), 
-     '[(vhel - 42) / sigma]'  : tuple(system_calc), 
-     'Qc (deg)'               : tuple(system_qc)}
+d = {'Vinit (km/s)'          : tuple(system_vinit), 
+     '[(vhel - 42) / sigma]' : tuple(system_calc), 
+     'Qc (deg)'              : tuple(system_qc),
+     'Identifiers'           : tuple(system_best_identifiers)}
 dataframe = pd.DataFrame(d)
 
-dataframe.plot.scatter('Vinit (km/s)', '[(vhel - 42) / sigma]', c='Qc (deg)', 
-                        colormap='viridis', title="ALL YEARS : [(vhel - 42) / sigma] vs vinit (km/s)")
+ax = dataframe.plot.scatter(x='Vinit (km/s)', y='[(vhel - 42) / sigma]', c='Qc (deg)', 
+                            colormap='viridis', title="ALL YEARS : [(vhel - 42) / sigma] vs vinit (km/s)")
+
+# if we wanted to annotate the points with anything 
+for idx, row in dataframe.iterrows():
+    ax.annotate(row['Identifiers'], (row['Vinit (km/s)'], row['[(vhel - 42) / sigma]']), 
+                xytext=(-60,5), textcoords='offset points')
+
 plt.show()
 
 # -----------------------------------------------------------------------------------------------------------
@@ -340,7 +329,10 @@ def using_mpl_scatter_density(fig, x, y):
 fig = plt.figure()
 using_mpl_scatter_density(fig, system_vinit, system_calc)
 plt.show()
+'''
 
+# -----------------------------------------------------------------------------------------------------------
+'''
 # 2d hist
 plt.hist2d(system_vinit, system_calc, (200, 100), cmap=plt.cm.viridis, cmin=1)
 plt.title(f'ALL YEARS : [(vhel - 42) / sigma] vs vinit (km/s)')
@@ -350,6 +342,7 @@ cbr = plt.colorbar()
 cbr.set_label("# of error bars above 42 km/s")
 plt.show()
 '''
+
 # -----------------------------------------------------------------------------------------------------------
 '''
 # gaussian plot sorted
