@@ -4,7 +4,13 @@ GMN datamining
 Vanessa Tran (vtran97@uwo.ca)
 May 1st to August 16 (2024)
 
-This file searches through the entire GMN database and searches for potential interstellar meteors. 
+This file searches through the entire GMN database and searches for potential interstellar meteors
+with following conditions:
+    - vhel > 42
+    - error bars (vhel - sigma vhel) > 42
+    - vinit below a specified threshold
+    - vhel above a certain threshold (further narrowing)
+    - sort by Qc (convergence)
 
 Conditions arguments can be inputted to narrow/broaden the search. print statements separate and optional.
 '''
@@ -12,22 +18,25 @@ Conditions arguments can be inputted to narrow/broaden the search. print stateme
 # -----------------------------------------------------------------------------------------------------------
 # imports - DO NOT DELETE!!!
 
+# graphing
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import pandas as pd
 import mpl_scatter_density # adds projection='scatter_density' 
-
 import numpy as np
+from scipy.stats import gaussian_kde
 
+# GMN
 from gmn_python_api import data_directory as dd
 from gmn_python_api import meteor_trajectory_reader
 
+# getting dates
 from datetime import datetime
 
 # -----------------------------------------------------------------------------------------------------------
-# color map 
+# color map  for graphs
 
-# "Viridis-like" colormap with white background
+# "Viridis-like" colormap with white background (otherwise purple)
 white_viridis = LinearSegmentedColormap.from_list('white_viridis', [
     (0, '#ffffff'),
     (1e-20, '#440053'),
@@ -39,11 +48,12 @@ white_viridis = LinearSegmentedColormap.from_list('white_viridis', [
 ], N=256)
 
 # -----------------------------------------------------------------------------------------------------------
-# get all entries up to the current month 
+# function : get all entries up to the current month 
 # this helps to automatically create a list of all the years in the system so that
-# you don't have to loop through them all manually
+# you don't have to loop through them all manually (done by just making a bunch of lists and putting them
+# into one at the end, but long term this is not effective)
 
-def get_all_months_list():
+def get_all_months_by_year_list():
     # returns a list of all months that the GMN has been active -- used to acccess data through GMN database
 
     # beginning of all data of GMN
@@ -108,7 +118,7 @@ def get_all_months_list():
     return all_months
 
 # -----------------------------------------------------------------------------------------------------------
-# printing output in python - can be edited to show more 
+# function : printing output in python - can be edited to show more 
 
 def print_output(value=0, value_cutoff=5, 
                  vhel=0, vhel_cutoff=50, 
@@ -121,37 +131,45 @@ def print_output(value=0, value_cutoff=5,
     output = ""
     if value > value_cutoff and vhel > vhel_cutoff and vinit < vinit_cutoff:
 
-                ''' 
-                # not needed right now -- modified to never have sigma = 0 entries 
-                if vhel_sigma_mod[number] == 0:
-                    output += "||SIGMA = ZERO|| "
-                else:
-                    output += "                 "
-                '''
+        ''' 
+        # not needed right now -- modified to never have sigma = 0 entries 
+        if vhel_sigma_mod[number] == 0:
+            output += "||SIGMA = ZERO|| "
+        else:
+            output += "                 "
+        '''
 
-                output += "||IDENTITY: " + str(identifier) + "|| "
+        output += "||IDENTITY: " + str(identifier) + "|| "
 
-                if len(str(vhel)) == 7: # strings too short
-                    text = str(vhel) + '0'
-                    output += "||SPEED (VHEL): " + text + "|| "
-                else: 
-                    output += "||SPEED (VHEL): " + str(vhel) + "|| "
+        txt = str(vhel)
+        if len(txt) <= 7: # strings too short
+            while len(txt) != 7:
+                txt = txt + '0'
+        output += "||VHEL: " + txt + "|| "
 
-                if vhel_sigma != 0:
-                    txt = str(vhel_sigma)
-                    if len(txt) != 6:
-                        while len(txt) != 6:
-                            txt += '0'
-                    output += "||SIGMA (VHEL): " + txt + "|| "
+        if vhel_sigma != 0:
+            txt = str(vhel_sigma)
+            if len(txt) != 6:
+                while len(txt) != 6:
+                    txt += '0'
+            output += "||SIGMA (VHEL): " + txt + "|| "
+        
+        txt = str(qc)
+        if len(txt) <= 5:
+            while len(txt) != 5:
+                txt = txt + '0'
+        output += "||QC: " + txt + "|| "
 
-                output += "||QC: " + str(qc) + "|| "
+        txt = str(value)
+        if len(txt) <= 18:
+            while len(txt) != 18:
+                txt = txt + '0'
+        output += "||VALUE: " + txt + "||"
 
-                output += "||VALUE: " + str(value) + "||"
-
-                print(output)
+        print(output)
 
 # -----------------------------------------------------------------------------------------------------------
-# checking conditions
+# function : checking conditions
 
 def check_conditions(value, value_cutoff,
                      vhel, vhel_cutoff, 
@@ -167,24 +185,23 @@ def check_conditions(value, value_cutoff,
 # -----------------------------------------------------------------------------------------------------------
 
 # calling function 
-all_months = get_all_months_list()
+all_months = get_all_months_by_year_list()
 
 # system lists for whichever parameters we decide to edit 
-system_best_identifiers = []
+system_identifiers = []
 system_vinit = []
 system_calc = []
 system_qc = []
 
-# for looping through all the years an displaying what year it is in python print
-year = 2018
-
 # looping through all years
 for month_list in all_months:
+
+    year = month_list[0].split("-")[0]
 
     print(f"\n************\nYEAR : {year}\n************")
 
     # lists to be reste for each year :D
-    calculation_best_data_greater_than_50 =  []
+    calculation_best_data =  []
     vinit_best_data_for_plot = []
     best_data_identifiers = []
     best_qc = []
@@ -210,6 +227,7 @@ for month_list in all_months:
         index = 0
         for vhel in traj_df['Vhel (km/s)']:
 
+            # get only entries with these conditions
             if vhel > 42 and vhel - traj_df['+/- (sigma.7)'][index] > 42:
 
                 # identifiers
@@ -243,19 +261,20 @@ for month_list in all_months:
 
             # getting only the best data with inputted conditions
             if check_conditions(value, 5,
-                    vhel_larger_than_42[number], 50,
+                    vhel_larger_than_42[number], 49.6,
                     vhel_sigma[number], 
-                    vinit[number], 50) :
+                    vinit[number], 50) : # this will return True or False
                 
-                calculation_best_data_greater_than_50.append(value)
+                # appending to lists
+                calculation_best_data.append(value)
                 vinit_best_data_for_plot.append(vinit[number])
                 best_data_identifiers.append(identifiers[number])
                 best_qc.append(qc[number])
 
-            # OUTPUT - modifiable 
+            # printing in output for the conditions specified -- separate from the appending conditions
             output = ""
             print_output(value, 5,
-                         vhel_larger_than_42[number], 50, 
+                         vhel_larger_than_42[number], 49.6, 
                          vhel_sigma[number], 
                          vinit[number], 50,
                          qc[number], 
@@ -265,28 +284,28 @@ for month_list in all_months:
     # YEARLY GRAPHS
     plt.errorbar(vinit_best_data_for_plot, calculation_best_data_greater_than_50, 0, 0, 'x')
 
+    # helps with scale
     plt.axhline(50, c='green')
     plt.axhline(200, c='blue')
     plt.axhline(5, c='red')
+
     plt.title(f'{year} : [(vhel - 42) / sigma] vs vinit (km/s)')
     plt.ylabel('[(vhel - 42) / sigma]')
     plt.xlabel('vinit (km/s)')
 
+    plt.grid()
     plt.show()
     '''
 
-    # adding to the system lists --> final lists for the final graphs at the end
-    system_best_identifiers += best_data_identifiers
+    # adding to the system lists --> final lists for the final graphs at the end since this info is all by year
+    system_identifiers += best_data_identifiers
     system_vinit += vinit_best_data_for_plot
-    system_calc += calculation_best_data_greater_than_50
+    system_calc += calculation_best_data
     system_qc += best_qc
-    
-    # updating year
-    year += 1
 
 # -----------------------------------------------------------------------------------------------------------
-'''
 # SYSTEM GRAPH - NORMAL SCATTERPLOT
+'''
 plt.scatter(system_vinit, system_calc)  
 
 plt.axhline(50, c='green')
@@ -302,25 +321,29 @@ plt.show()
 # -----------------------------------------------------------------------------------------------------------
 # GRAPH SORTED BY QC
 
+# creating pandas dataframe so that we can colour-code according to a third variable and identify using a fourth 
 d = {'Vinit (km/s)'          : tuple(system_vinit), 
      '[(vhel - 42) / sigma]' : tuple(system_calc), 
      'Qc (deg)'              : tuple(system_qc),
-     'Identifiers'           : tuple(system_best_identifiers)}
+     'Identifiers'           : tuple(system_identifiers)}
 dataframe = pd.DataFrame(d)
 
-ax = dataframe.plot.scatter(x='Vinit (km/s)', y='[(vhel - 42) / sigma]', c='Qc (deg)', 
-                            colormap='viridis', title="ALL YEARS : [(vhel - 42) / sigma] vs vinit (km/s)")
+#c creating plot
+ax = dataframe.plot.scatter(x='Vinit (km/s)', y='[(vhel - 42) / sigma]', 
+                            c='Qc (deg)', colormap='viridis', 
+                            title="ALL YEARS : [(vhel - 42) / sigma] vs vinit (km/s)")
 
-# if we wanted to annotate the points with anything 
+# if we wanted to annotate the points with anything - identifiers for now
 for idx, row in dataframe.iterrows():
     ax.annotate(row['Identifiers'], (row['Vinit (km/s)'], row['[(vhel - 42) / sigma]']), 
-                xytext=(-60,5), textcoords='offset points')
+                xytext=(-60,10), textcoords='offset points')
 
+plt.grid()
 plt.show()
 
 # -----------------------------------------------------------------------------------------------------------
+# DENSITY MAP
 '''
-# density map
 def using_mpl_scatter_density(fig, x, y):
     ax = fig.add_subplot(1, 1, 1, projection='scatter_density')
     density = ax.scatter_density(x, y, cmap=white_viridis)
@@ -332,8 +355,8 @@ plt.show()
 '''
 
 # -----------------------------------------------------------------------------------------------------------
+# 2D HISTOGRAM
 '''
-# 2d hist
 plt.hist2d(system_vinit, system_calc, (200, 100), cmap=plt.cm.viridis, cmin=1)
 plt.title(f'ALL YEARS : [(vhel - 42) / sigma] vs vinit (km/s)')
 plt.ylabel('[(vhel - 42) / sigma]')
@@ -344,13 +367,9 @@ plt.show()
 '''
 
 # -----------------------------------------------------------------------------------------------------------
+# GAUSSIAN PLOT - NOT SORTED
 '''
-# gaussian plot sorted
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.stats import gaussian_kde
-
-# Generate fake data
+# data
 x = system_vinit
 y = system_calc
 
