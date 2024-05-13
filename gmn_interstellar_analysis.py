@@ -289,19 +289,22 @@ for month_list in all_months:
             index += 1
 
         # -----------------------------------------------------------------------------------------------------------
-        # creating scatterplots
+        # narrowing conditions and getting data 
 
-        # (vhel-42) / sigma vhel as a measurement (y axis) RATIO
-        # it is a ratio to see ho many errors bars above 42 that meteor is (vhel)
+        # ADJUST NARROWED CONDITIONS HERE! 
+        # conditions = value, vhel, vinit
+        conditions = [5, 49.6, 50]
 
         for number in range(len(vhel_larger_than_42)):
             value = (vhel_larger_than_42[number] - 42) / vhel_sigma[number]
+            # (vhel-42) / sigma vhel as a measurement (y axis) 
+                # it is a ratio to see how many errors bars above 42 that meteor is (vhel)
 
-            # getting only the best data with inputted conditions
-            if check_conditions(value, 5,
-                    vhel_larger_than_42[number], 49.6,
+            # getting only the best data with inputted conditions (see conditions above)
+            if check_conditions(value, conditions[0],
+                    vhel_larger_than_42[number], conditions[1],
                     vhel_sigma[number], 
-                    vinit[number], 50) : # this will return True or False
+                    vinit[number], conditions[2]) : # this will return True or False
                 
                 # appending to lists
                 calculation_best_data.append(value)
@@ -313,10 +316,10 @@ for month_list in all_months:
 
             # printing in output for the conditions specified -- separate from the appending conditions
             output = ""
-            print_output(value, 5,
-                         vhel_larger_than_42[number], 49.6, 
+            print_output(value, conditions[0],
+                         vhel_larger_than_42[number], conditions[1], 
                          vhel_sigma[number], 
-                         vinit[number], 50,
+                         vinit[number], conditions[2],
                          qc[number], 
                          identifiers[number], 
                          stations[number], 
