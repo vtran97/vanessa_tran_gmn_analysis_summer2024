@@ -125,7 +125,14 @@ def print_output(value=0, value_cutoff=5,
                  vhel_sigma=0, 
                  vinit=0, vinit_cutoff=50, 
                  qc=0, 
-                 identifier=""):
+                 identifier="", 
+                 stations='', 
+                 skyfit_script_identifier=''):
+    
+    # length for the text splits
+    cus_lens = [8,6]
+    res = []
+    start = 0
 
     # prints the output give the above parameters
     output = ""
@@ -164,7 +171,26 @@ def print_output(value=0, value_cutoff=5,
         if len(txt) <= 18:
             while len(txt) != 18:
                 txt = txt + '0'
-        output += "||VALUE: " + txt + "||"
+        output += "||VALUE: " + txt + "|| "
+
+        iden = str(identifier).split("_")[0]
+        for size in cus_lens:
+            res.append(iden[start : start + size])
+            start += size
+
+        txt = str(skyfit_script_identifier)
+        txt = txt.split(".")[1]
+        out = "\n\t\t||SCRIPT IDENTIFIER FOR RAW: " + res[0] + "_" + res[1] + "." + txt + "|| "
+        output += out
+
+        txt = ''
+        last = len(stations) - 1
+        for station in range(len(stations)): 
+            if stations[station] != stations[last]:
+                txt += stations[station] + ", "
+            else:
+                txt += stations[station]
+        output += "||STATIONS: " + txt + "|| "
 
         print(output)
 
@@ -192,6 +218,8 @@ system_identifiers = []
 system_vinit = []
 system_calc = []
 system_qc = []
+system_stations = []
+system_skyfit_script_identifiers = []
 
 # looping through all years
 for month_list in all_months:
@@ -205,6 +233,8 @@ for month_list in all_months:
     vinit_best_data_for_plot = []
     best_data_identifiers = []
     best_qc = []
+    best_stations = []
+    best_skyfit_script_identifiers = []
 
     # looping through each month in the year
     for month in month_list:
@@ -222,6 +252,8 @@ for month_list in all_months:
         vinit = []
         vinit_sigma = []
         qc = []
+        stations = []
+        skyfit_script_identifiers = []
 
         # iterating through the traj_df using vhel 
         index = 0
@@ -248,6 +280,12 @@ for month_list in all_months:
                 # qc
                 qc.append(traj_df['Qc (deg)'][index])
 
+                # stations
+                stations.append(traj_df['Participating (stations)'][index])
+
+                # script skyfit identifers
+                skyfit_script_identifiers.append(traj_df['Beginning (UTC Time)'][index])
+
             index += 1
 
         # -----------------------------------------------------------------------------------------------------------
@@ -270,6 +308,8 @@ for month_list in all_months:
                 vinit_best_data_for_plot.append(vinit[number])
                 best_data_identifiers.append(identifiers[number])
                 best_qc.append(qc[number])
+                best_stations.append(stations[number])
+                best_skyfit_script_identifiers.append(skyfit_script_identifiers[number])
 
             # printing in output for the conditions specified -- separate from the appending conditions
             output = ""
@@ -278,7 +318,9 @@ for month_list in all_months:
                          vhel_sigma[number], 
                          vinit[number], 50,
                          qc[number], 
-                         identifiers[number])
+                         identifiers[number], 
+                         stations[number], 
+                         skyfit_script_identifiers[number])
 
     '''
     # YEARLY GRAPHS
@@ -302,6 +344,8 @@ for month_list in all_months:
     system_vinit += vinit_best_data_for_plot
     system_calc += calculation_best_data
     system_qc += best_qc
+    system_stations += best_stations
+    system_skyfit_script_identifiers += best_skyfit_script_identifiers
 
 # -----------------------------------------------------------------------------------------------------------
 # SYSTEM GRAPH - NORMAL SCATTERPLOT
