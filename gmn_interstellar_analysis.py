@@ -33,6 +33,9 @@ from gmn_python_api import meteor_trajectory_reader
 # getting dates
 from datetime import datetime
 
+# get all months
+from get_all_months import get_all_months_by_year_list
+
 # -----------------------------------------------------------------------------------------------------------
 # color map  for graphs
 
@@ -46,76 +49,6 @@ white_viridis = LinearSegmentedColormap.from_list('white_viridis', [
     (0.8, '#78d151'),
     (1, '#fde624'),
 ], N=256)
-
-# -----------------------------------------------------------------------------------------------------------
-# function : get all entries up to the current month 
-# this helps to automatically create a list of all the years in the system so that
-# you don't have to loop through them all manually (done by just making a bunch of lists and putting them
-# into one at the end, but long term this is not effective)
-
-def get_all_months_by_year_list():
-    # returns a list of all months that the GMN has been active -- used to acccess data through GMN database
-
-    # beginning of all data of GMN
-    year = 2018
-
-    all_months = []
-
-    # Get the current mo
-    x = str(datetime.now().date()).split("-")
-    current_month = x[0] + "-" + x[1] 
-    year_list = []
-    start = "2018-12"
-    current_month 
-
-    for year in range(int(start.split("-")[0]), int(current_month.split("-")[0]) + 1):
-        year_list.append(year)
-
-    for year_no in range(len(year_list)):
-
-        # this just allows the computer see the correct year instead of using index
-        year = year_no + 2018
-
-        if year == 2018:
-            # special case, only one month and should never change (unless we build a time machine)
-            all_months.append(['2018-12'])
-
-        else:
-            # for all months after leading up to current date for the current year 
-
-            year_month_list = [] # full list
-            cut_list = [] # list for the cut off year
-            done = False # used for later for cut list
-
-            for month in range(1, 13):
-
-                if month in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
-                    month_name = str(year) + '-0' + str(month)
-                    year_month_list.append(month_name)
-
-                else: # months 10, 11, 12
-                    month_name = str(year) + "-" + str(month)
-                    year_month_list.append(month_name)
-            
-            if year != int(current_month.split("-")[0]): # if the year is not the current year
-                all_months.append(year_month_list)
-            
-            else: # if the year is the current year
-                # need to shorten the lsit to find the months up to this point that we can analyse 
-                # (not getting results from the future)
-
-                while not done:
-                    for i in range(len(year_month_list)):
-                        if year_month_list[i] == current_month:
-                            cut_list.append(year_month_list[i])
-                            done = True
-                        if year_month_list[i] != current_month and done == False:
-                            cut_list.append(year_month_list[i])
-
-                all_months.append(cut_list)
-
-    # return list in form [[months from 2018], [months from 2019], [months from 2020], etc...]
-    return all_months
 
 # -----------------------------------------------------------------------------------------------------------
 # function : printing output in python - can be edited to show more 
@@ -146,46 +79,50 @@ def print_output(value=0, value_cutoff=5,
             output += "                 "
         '''
 
+        # identity of meteor in GMN database
         output += "||IDENTITY: " + str(identifier) + "|| "
 
+        # vhel (heliocentric velocity) according to GMN
         txt = str(vhel)
-        if len(txt) <= 7: # strings too short
+        if len(txt) <= 7: # string too short
             while len(txt) != 7:
                 txt = txt + '0'
         output += "||VHEL: " + txt + "|| "
 
+        # the sigma (sd) of vhel in GMN
         if vhel_sigma != 0:
             txt = str(vhel_sigma)
-            if len(txt) != 6:
+            if len(txt) <= 6: # string too short
                 while len(txt) != 6:
                     txt += '0'
             output += "||SIGMA (VHEL): " + txt + "|| "
         
+        # the Qc (convergence angle) according to GMN 
         txt = str(qc)
-        if len(txt) <= 5:
+        if len(txt) <= 5: # string too short
             while len(txt) != 5:
                 txt = txt + '0'
         output += "||QC: " + txt + "|| "
 
+        # computed value for the number of error bars above 42km/s the measure vhel is 
         txt = str(value)
-        if len(txt) <= 18:
+        if len(txt) <= 18: # string too short
             while len(txt) != 18:
                 txt = txt + '0'
         output += "||VALUE: " + txt + "|| "
 
+        # specific format for raw data --> Denis Vida
         iden = str(identifier).split("_")[0]
         for size in cus_lens:
             res.append(iden[start : start + size])
             start += size
+        txt = str(skyfit_script_identifier).split(".")[1]
+        output += "\n\t\t||SCRIPT IDENTIFIER FOR RAW: " + res[0] + "_" + res[1] + "." + txt + "|| " 
 
-        txt = str(skyfit_script_identifier)
-        txt = txt.split(".")[1]
-        out = "\n\t\t||SCRIPT IDENTIFIER FOR RAW: " + res[0] + "_" + res[1] + "." + txt + "|| "
-        output += out
-
+        # stations involved in seeing the meteor
         txt = ''
         last = len(stations) - 1
-        for station in range(len(stations)): 
+        for station in range(len(stations)): # printing it nicely and not in list with ''
             if stations[station] != stations[last]:
                 txt += stations[station] + ", "
             else:
@@ -213,7 +150,7 @@ def check_conditions(value, value_cutoff,
 # calling function 
 all_months = get_all_months_by_year_list()
 
-# system lists for whichever parameters we decide to edit 
+# system lists --> all years (separated by month and by year inside)
 system_identifiers = []
 system_vinit = []
 system_calc = []
@@ -228,7 +165,7 @@ for month_list in all_months:
 
     print(f"\n************\nYEAR : {year}\n************")
 
-    # lists to be reste for each year :D
+    # lists to be reset for each year
     calculation_best_data =  []
     vinit_best_data_for_plot = []
     best_data_identifiers = []
@@ -259,7 +196,7 @@ for month_list in all_months:
         index = 0
         for vhel in traj_df['Vhel (km/s)']:
 
-            # get only entries with these conditions
+            # get only entries with vhel > 42 and vhel minus one error bar is still larger than 42
             if vhel > 42 and vhel - traj_df['+/- (sigma.7)'][index] > 42:
 
                 # identifiers
@@ -304,7 +241,7 @@ for month_list in all_months:
             if check_conditions(value, conditions[0],
                     vhel_larger_than_42[number], conditions[1],
                     vhel_sigma[number], 
-                    vinit[number], conditions[2]) : # this will return True or False
+                    vinit[number], conditions[2]): # this will return True or False
                 
                 # appending to lists
                 calculation_best_data.append(value)
@@ -353,7 +290,7 @@ for month_list in all_months:
 # -----------------------------------------------------------------------------------------------------------
 # SYSTEM GRAPH - NORMAL SCATTERPLOT
 '''
-plt.scatter(system_vinit, system_calc)  
+plt.scatter(system_vinit, system_calc, marker='x')  
 
 plt.axhline(50, c='green')
 plt.axhline(200, c='blue')
@@ -368,21 +305,24 @@ plt.show()
 # -----------------------------------------------------------------------------------------------------------
 # GRAPH SORTED BY QC
 
+plt.rcParams.update({'font.size':30})
+
 # creating pandas dataframe so that we can colour-code according to a third variable and identify using a fourth 
-d = {'Vinit (km/s)'          : tuple(system_vinit), 
-     '[(vhel - 42) / sigma]' : tuple(system_calc), 
-     'Qc (deg)'              : tuple(system_qc),
-     'Identifiers'           : tuple(system_identifiers)}
+d = {'Vinit (km/s)'      : tuple(system_vinit), 
+     '[(vhel - 42) / σ]' : tuple(system_calc), 
+     'Qc (deg)'          : tuple(system_qc),
+     'Identifiers'       : tuple(system_identifiers)}
 dataframe = pd.DataFrame(d)
 
-#c creating plot
-ax = dataframe.plot.scatter(x='Vinit (km/s)', y='[(vhel - 42) / sigma]', 
+# creating plot using dataframe and ax
+# c = colored by Qc
+ax = dataframe.plot.scatter(x='Vinit (km/s)', y='[(vhel - 42) / σ]', 
                             c='Qc (deg)', colormap='viridis', 
-                            title="ALL YEARS : [(vhel - 42) / sigma] vs vinit (km/s)")
+                            title="ALL YEARS : [(vhel - 42) / σ] vs vinit (km/s)")
 
-# if we wanted to annotate the points with anything - identifiers for now
+# annotate the points with anything - identifiers 
 for idx, row in dataframe.iterrows():
-    ax.annotate(row['Identifiers'], (row['Vinit (km/s)'], row['[(vhel - 42) / sigma]']), 
+    ax.annotate(row['Identifiers'], (row['Vinit (km/s)'], row['[(vhel - 42) / σ]']), 
                 xytext=(-60,10), textcoords='offset points')
 
 plt.grid()
