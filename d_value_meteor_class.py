@@ -126,8 +126,8 @@ class Meteor:
         d = np.sqrt(d2)
         return d
     
-#_----------------------------
-
+#----------------------------TESTS----------------------------
+'''
 # Asteroid(e, q, i, omega [NODE], w [PERI])
 
 bennu = Meteor(.2037450762416414, .8968944004459729, 6.03494377024794, 2.06086619569642, 66.22306084084298) # taken from Horizons
@@ -136,7 +136,7 @@ p_ast = Meteor(.6730850153945767, .9960459017518296, 10.42219597127401, 190.9484
 abc = Meteor(0.4154170571173557, 2.50646576, 3.79647861, 29.96204163, 312.33501099)
 
 # Southworth & Hawkins function
-D_SH = abc.D_criterison(ba14) 
+D_SH = abc.D_criterion(ba14) 
 # Drummond function
 D_D = abc.D_criterion(ba14, version='d')
 
@@ -147,8 +147,4 @@ print('d_sh', D_SH)
 print("*************************")
 print("d_d", D_D)
 print("*************************")
-
-
-
-
-
+'''
