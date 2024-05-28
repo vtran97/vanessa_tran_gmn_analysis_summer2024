@@ -1,8 +1,14 @@
-# -----------------------------------------------------------------------------------------------------------
-# function : get all entries up to the current month 
-# this helps to automatically create a list of all the years in the system so that
-# you don't have to loop through them all manually (done by just making a bunch of lists and putting them
-# into one at the end, but long term this is not effective)
+'''
+GMN datamining 
+
+Vanessa Tran (vtran97@uwo.ca)
+May 1st to August 16 (2024)
+
+function : get all entries up to the current month 
+this helps to automatically create a list of all the years in the system so that
+you don't have to loop through them all manually (done by just making a bunch of lists and putting them
+into one at the end, but long term this is not effective)
+'''
 
 # getting dates
 from datetime import datetime
