@@ -9,6 +9,7 @@ Summer 2024 (May 1st - Aug 16th)
 
 Supervisor: Dr. Paul Wiegert
 
+----------------------------------------
 
 Resources
 
