@@ -18,7 +18,8 @@ import astropy.units as u
 
 class Meteor:
 
-    def __init__(self, e, q, i, omega, w):
+    def __init__(self, identity, e, q, i, omega, w):
+        self.identity = identity
         self.e = e
         self.q = q
         self.i = i

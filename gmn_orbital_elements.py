@@ -293,7 +293,7 @@ for month_list in all_months:
                 print()
                 '''
 
-                obj = Meteor(e, q, i, node, peri)
+                obj = Meteor(identity, e, q, i, node, peri)
                 print("asteroid obj created")
                 asteroid_obj_list.append(obj)
 
@@ -332,3 +332,24 @@ for month_list in all_months:
     system_T_orbital_period += T_orbital_period
 
     system_TisserandJ += TisserandJ
+
+# -----------------------------------------------------------------------------------------------------------
+
+# check for d values --> use the D criterion
+# D criterion will work for whichever order you input (self vs obj doesn't matter)
+
+# print(asteroid_obj_list)
+
+# Asteroid(e, q, i, omega [NODE], w [PERI])
+bennu = Meteor('Bennu', .2037450762416414, .8968944004459729, 6.03494377024794, 2.06086619569642, 66.22306084084298) # taken from Horizons
+
+# try bennu against all other potential asteroids
+for meteor_obj in asteroid_obj_list:
+    # Southworth & Hawkins function
+    D_SH = bennu.D_criterion(meteor_obj)
+    # Drummond function
+    D_D = bennu.D_criterion(meteor_obj, version='d')
+
+    print(f"\nmeteor_obj.identity")
+    print('D_SH', D_SH)
+    print('D_D', D_D)
