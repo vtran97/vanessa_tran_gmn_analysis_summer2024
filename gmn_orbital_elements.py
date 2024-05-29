@@ -4,54 +4,30 @@ GMN datamining
 Vanessa Tran (vtran97@uwo.ca)
 May 1st to August 16 (2024)
 
-This file searches through the entire GMN database and searches for potential interstellar meteors
-with following conditions:
-    - vhel > 42
-    - error bars (vhel - sigma vhel) > 42
-    - vinit below a specified threshold
-    - vhel above a certain threshold (further narrowing)
-    - sort by Qc (convergence)
-
-Conditions arguments can be inputted to narrow/broaden the search. print statements separate and optional.
+This file searches through the entire GMN database and searches through orbital elements using
+min and max values
+- used primarily for Bennu searches (2024-05-29)
+- asteroid function a child class of Orbit class from sbpy
+    - the function D_Criterion is edited; to work with GMN data, it has been changed to work 
+      with self and obj instead of with two bodies given through the from_horizons function of 
+      the Orbit class from sbpy
+    - the order of self nad obj DOES NOT matter -- it will give you the same value no matter 
+      which way you decide to type your self/obj order
+    - 
 '''
 
 # -----------------------------------------------------------------------------------------------------------
 # imports - DO NOT DELETE!!!
 
-# graphing
-import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
-import pandas as pd
-import mpl_scatter_density # adds projection='scatter_density' 
-import numpy as np
-from scipy.stats import gaussian_kde
-
 # GMN
 from gmn_python_api import data_directory as dd
 from gmn_python_api import meteor_trajectory_reader
-
-# getting dates
-from datetime import datetime
 
 # get all months
 from get_all_months import get_all_months_by_year_list
 
 # for D values
 from d_value_meteor_class import Meteor
-
-# -----------------------------------------------------------------------------------------------------------
-# color map  for graphs
-
-# "Viridis-like" colormap with white background (otherwise purple)
-white_viridis = LinearSegmentedColormap.from_list('white_viridis', [
-    (0, '#ffffff'),
-    (1e-20, '#440053'),
-    (0.2, '#404388'),
-    (0.4, '#2a788e'),
-    (0.6, '#21a784'),
-    (0.8, '#78d151'),
-    (1, '#fde624'),
-], N=256)
 
 # -----------------------------------------------------------------------------------------------------------
 # check conditions
@@ -70,10 +46,12 @@ def check_conditions(a, a_min, a_max,
                      n, n_min, n_max,
                      T, T_min, T_max,
                      TisserandJ, TisserandJ_min, TisserandJ_max):
+    '''checks for all orbital elements conditions'''
     if a > a_min and a < a_max :
         if e > e_min and e < e_max: 
             if i_min < 0:
-                # editing the restrictions isince i angle covers interval before and after Zero
+                # editing the restrictions since i angle covers interval before and after zero degrees
+                # angle wrapping can be done for all of the other elements as well -- follow template below
                 i_sub_min = 360 + i_min
                 i_sub_max = 360
                 # reset i min to 0 for interval 
@@ -136,9 +114,12 @@ system_T_orbital_period = []
 
 system_TisserandJ = []
 
-asteroid_obj_list = []
+bennu_asteroid_obj_list = []
 
-# loopig through all year data
+# arb as in arbitrary -- used for any non specific calculations for criteria for conditions later
+arb = [-10000, 9999] 
+
+# looping through all year data
 for month_list in all_months:
 
     year = month_list[0].split("-")[0]
@@ -191,6 +172,7 @@ for month_list in all_months:
         traj_df = meteor_trajectory_reader.read_data(traj_file_content)
         
         for ix in range(len(traj_df['a (AU)'])):
+            # get all information needde from the dataframe
             
             identity = traj_df.index[ix]
 
@@ -226,8 +208,6 @@ for month_list in all_months:
             T = traj_df['T (years)'][ix]
 
             TisandJ = traj_df['TisserandJ'][ix]
-
-            arb = [-10000, 9999] # arb as in arbitrary
 
             if check_conditions(a, 1.126391025894812 - 0.2, 1.126391025894812 + 0.2,
                                 e, 0.2037450762416414 - 0.2, 0.2037450762416414 + 0.2,
@@ -278,24 +258,11 @@ for month_list in all_months:
                 T_orbital_period.append(T) 
 
                 TisserandJ.append(TisandJ)
-                '''
-                print('identity :', identity)
-                print('a =', a)
-                print('sigma a = ', sigma_a)
-                print('e =', e)
-                print('sigma e = ', sigma_e)
-                print('i =', i)
-                print('sigma i = ', sigma_i)
-                print('peri =', peri)
-                print('sigma peri = ', sigma_peri)
-                print('node =', node)
-                print('sigma node = ', sigma_node)
-                print()
-                '''
 
+                # create asteroid object and append to list to check against Bennu later
                 obj = Meteor(identity, e, q, i, node, peri)
                 print("asteroid obj created")
-                asteroid_obj_list.append(obj)
+                bennu_asteroid_obj_list.append(obj)
 
     # add year to system lists
     system_identifiers += identifiers
@@ -334,22 +301,43 @@ for month_list in all_months:
     system_TisserandJ += TisserandJ
 
 # -----------------------------------------------------------------------------------------------------------
-
 # check for d values --> use the D criterion
-# D criterion will work for whichever order you input (self vs obj doesn't matter)
 
 # print(asteroid_obj_list)
 
 # Asteroid(e, q, i, omega [NODE], w [PERI])
-bennu = Meteor('Bennu', .2037450762416414, .8968944004459729, 6.03494377024794, 2.06086619569642, 66.22306084084298) # taken from Horizons
+bennu_ephemeris = Meteor('Bennu', .2037450762416414, .8968944004459729, 6.03494377024794, 2.06086619569642, 66.22306084084298) 
+# bennu info taken from Horizons Web Application - 101955 Bennu (1999 RQ36)
+
+bennu_from_horizon_updated = Meteor('Bennu', 0.2037482514536186, 0.89654206, 6.03301417, 1.98511762, 66.37138491)
+# bennu info taken from the from_horizons method and printed -- these are likely updated? 
 
 # try bennu against all other potential asteroids
-for meteor_obj in asteroid_obj_list:
-    # Southworth & Hawkins function
-    D_SH = bennu.D_criterion(meteor_obj)
-    # Drummond function
-    D_D = bennu.D_criterion(meteor_obj, version='d')
+for meteor_obj in bennu_asteroid_obj_list:
 
-    print(f"\nmeteor_obj.identity")
-    print('D_SH', D_SH)
-    print('D_D', D_D)
+    # Southworth & Hawkins function
+    D_SH_e = bennu_ephemeris.D_criterion(meteor_obj)
+    # Drummond function
+    D_D_e = bennu_ephemeris.D_criterion(meteor_obj, version='d')
+
+    # Southworth & Hawkins function
+    D_SH_fhu = bennu_from_horizon_updated.D_criterion(meteor_obj)
+    # Drummond function
+    D_D_fhu = bennu_from_horizon_updated.D_criterion(meteor_obj, version='d')
+
+    print("\n-------------")
+    print(meteor_obj.identity)
+
+    print("\nFROM HORIZONS (LATEST EPOCH)")
+    print('D_SH', D_SH_fhu)
+    print('D_D', D_D_fhu)
+
+    print("\nEPHEMERIS - WEB APP")
+    print('D_SH', D_SH_e)
+    print('D_D', D_D_e)
+
+    print("\nDifference")
+    print("D_SH", abs(D_SH_e - D_SH_fhu))
+    print("D_D", abs(D_D_e - D_D_fhu))
+    print("-------------")
+
