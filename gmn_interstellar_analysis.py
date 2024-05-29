@@ -13,6 +13,8 @@ with following conditions:
     - sort by Qc (convergence)
 
 Conditions arguments can be inputted to narrow/broaden the search. print statements separate and optional.
+
+See "How-To : Access files for GMN for Datamining" in References in GitHub
 '''
 
 # -----------------------------------------------------------------------------------------------------------
@@ -230,7 +232,7 @@ for month_list in all_months:
 
         # ADJUST NARROWED CONDITIONS HERE! 
         # conditions = value, vhel, vinit
-        conditions = [5, 49.6, 50]
+        conditions = [5, 49, 52]
 
         for number in range(len(vhel_larger_than_42)):
             value = (vhel_larger_than_42[number] - 42) / vhel_sigma[number]
