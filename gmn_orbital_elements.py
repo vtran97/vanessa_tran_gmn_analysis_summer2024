@@ -46,30 +46,88 @@ def check_conditions(a, a_min, a_max,
                      n, n_min, n_max,
                      T, T_min, T_max,
                      TisserandJ, TisserandJ_min, TisserandJ_max):
-    '''checks for all orbital elements conditions'''
+    '''checks for all orbital elements conditions -- optimize!!'''
+
+    conditions_list = []
+
     if a > a_min and a < a_max :
-        if e > e_min and e < e_max: 
-            if i_min < 0:
-                # editing the restrictions since i angle covers interval before and after zero degrees
-                # angle wrapping can be done for all of the other elements as well -- follow template below
-                i_sub_min = 360 + i_min
-                i_sub_max = 360
-                # reset i min to 0 for interval 
-                i_min = 0
-                if i > i_min and i < i_max or i < i_sub_max and i > i_sub_min:
-                    if peri > peri_min and peri < peri_max:
-                        if node > node_min and node < node_max:
-                            if Pi > Pi_min and Pi < Pi_max:
-                                if b > b_min and b < b_max:
-                                    if q > q_min and q < q_max:
-                                        if f > f_min and f < f_max:
-                                            if M > M_min and M < M_max:
-                                                if Q > Q_min and Q < Q_max:
-                                                    if n > n_min and n < n_max:
-                                                        if T > T_min and T < T_max:
-                                                            if TisserandJ > TisserandJ_min and TisserandJ < TisserandJ_max:
-                                                                return True
-    return False
+        conditions_list.append(True)
+
+    if e > e_min and e < e_max:
+        conditions_list.append(True)
+    
+    if i > i_min and i < i_max and i_min > 0 and i_max < 360:
+        conditions_list.append(True)
+    elif i_min < 0:
+        # editing the restrictions since i angle covers interval before and after zero degrees
+        # angle wrapping can be done for all of the other elements as well -- follow template below
+        i_sub_min = 360 + i_min
+        i_sub_max = 360
+        # reset i min to 0 for interval 
+        i_min = 0
+        if i > i_min and i < i_max or i < i_sub_max and i > i_sub_min:
+            conditions_list.append(True)
+    elif i_max > 360:
+        i_sub_min = 0
+        i_sub_max = i_max - 360
+        i_max = 360
+        if i > i_min and i < i_max or i < i_sub_max and i > i_sub_min:
+            conditions_list.append(True)
+
+    if peri > peri_min and peri < peri_max and peri_min > 0 and peri_max < 360:
+        conditions_list.append(True)
+    elif peri_min < 0:
+        peri_sub_min = 360 + peri_min
+        peri_sub_max = 360
+        peri_min = 0
+        if peri > peri_min and peri < peri_max or peri < peri_sub_max and peri > peri_sub_min:
+            conditions_list.append(True)
+    elif peri_max > 360:
+        peri_sub_min = 0
+        peri_sub_max = i_max - 360
+        peri_max = 360
+        if peri > peri_min and peri < peri_max or peri < peri_sub_max and peri > peri_sub_min:
+            conditions_list.append(True)
+
+    if node > node_min and node < node_max and node_min > 0 and node_max < 360:
+        conditions_list.append(True)
+    elif node_min < 0:
+        node_sub_min = 360 + node_min
+        node_sub_max = 360
+        node_min = 0
+        if node > node_min and node < node_max or node < node_sub_max and node > node_sub_min:
+            conditions_list.append(True)
+    elif node_max > 360:
+        node_sub_min = 0
+        node_sub_max = i_max - 360
+        node_max = 360
+        if node > node_min and node < node_max or node < node_sub_max and node > node_sub_min:
+            conditions_list.append(True)
+  
+    if Pi > Pi_min and Pi < Pi_max:
+        conditions_list.append(True)
+    if b > b_min and b < b_max:
+        conditions_list.append(True)
+    if q > q_min and q < q_max:
+        conditions_list.append(True)
+    if f > f_min and f < f_max:
+        conditions_list.append(True)
+    if M > M_min and M < M_max:
+        conditions_list.append(True)
+    if Q > Q_min and Q < Q_max:
+        conditions_list.append(True)
+    if n > n_min and n < n_max:
+        conditions_list.append(True)
+    if T > T_min and T < T_max:
+        conditions_list.append(True)
+    if TisserandJ > TisserandJ_min and TisserandJ < TisserandJ_max:
+        conditions_list.append(True)
+
+    if len(conditions_list) == 14:
+        return True
+    else:
+        return False
+    
 
 # -----------------------------------------------------------------------------------------------------------
 # dataminings starts here
@@ -209,6 +267,8 @@ for month_list in all_months:
 
             TisandJ = traj_df['TisserandJ'][ix]
 
+            # BENNU --------------------------------------------------------------------
+
             if check_conditions(a, 1.126391025894812 - 0.2, 1.126391025894812 + 0.2,
                                 e, 0.2037450762416414 - 0.2, 0.2037450762416414 + 0.2,
                                 i, 6.03494377024794 - 10, 6.03494377024794 + 10,
@@ -301,9 +361,8 @@ for month_list in all_months:
     system_TisserandJ += TisserandJ
 
 # -----------------------------------------------------------------------------------------------------------
+# BENNU
 # check for d values --> use the D criterion
-
-# print(asteroid_obj_list)
 
 # Asteroid(e, q, i, omega [NODE], w [PERI])
 bennu_ephemeris = Meteor('Bennu', .2037450762416414, .8968944004459729, 6.03494377024794, 2.06086619569642, 66.22306084084298) 
