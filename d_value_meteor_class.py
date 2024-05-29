@@ -4,10 +4,10 @@ GMN datamining
 Vanessa Tran (vtran97@uwo.ca)
 May 1st to August 16 (2024)
 
-Meteor class for cchecking against other asteroid orbital elemnts and orbit
+Meteor class for checking against other asteroid orbital elemnts and orbit
 '''
 
-# -----------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
 # imports - DO NOT DELETE!!!
 
 import numpy as np
@@ -27,7 +27,8 @@ class Meteor:
         self.w = w
         
     def D_criterion(self, obj, version='sh'):
-        # THIS FUNCTION IS ADAPTED FROM ORIGINAL FUNCTION FROM SBPY !!! 
+        # THIS FUNCTION IS ADAPTED FROM ORIGINAL FUNCTION FROM SBPY !!! using self and obj instead 
+        # of strictly orbit class that takes info from Horizons 
         # -- Mommert, Kelley, de Val-Borro, Li et al. (2019), Journal of Open Source Software, 4(38), 1426
 
         """Evaluate orbit similarity D-criterion

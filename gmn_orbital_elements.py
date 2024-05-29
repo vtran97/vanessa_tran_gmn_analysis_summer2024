@@ -367,6 +367,7 @@ for month_list in all_months:
 # Asteroid(e, q, i, omega [NODE], w [PERI])
 bennu_ephemeris = Meteor('Bennu', .2037450762416414, .8968944004459729, 6.03494377024794, 2.06086619569642, 66.22306084084298) 
 # bennu info taken from Horizons Web Application - 101955 Bennu (1999 RQ36)
+# for extra info : https://ssd.jpl.nasa.gov/horizons/manual.html#search
 
 bennu_from_horizon_updated = Meteor('Bennu', 0.2037482514536186, 0.89654206, 6.03301417, 1.98511762, 66.37138491)
 # bennu info taken from the from_horizons method and printed -- these are likely updated? 
@@ -387,11 +388,11 @@ for meteor_obj in bennu_asteroid_obj_list:
     print("\n-------------")
     print(meteor_obj.identity)
 
-    print("\nFROM HORIZONS (LATEST EPOCH)")
+    print("\nFROM HORIZONS (LATEST EPOCH) - 2460460.2864766")
     print('D_SH', D_SH_fhu)
     print('D_D', D_D_fhu)
 
-    print("\nEPHEMERIS - WEB APP")
+    print("\nEPHEMERIS - WEB APP - 2455562.5")
     print('D_SH', D_SH_e)
     print('D_D', D_D_e)
 
