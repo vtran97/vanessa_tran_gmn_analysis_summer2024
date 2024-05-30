@@ -23,13 +23,12 @@ Resources
 
 Files
 
+- functions.py
+  - all functions organized by category 
 
 - gmn_interstellar_analysis.py
   - code to search for interstellar meteors
   - conditions can be specified in conditions list
-
-- get_all_months.py
-  - function to get all data from all monthly files GMN
  
 - orbital_elements.py
   - class for getting all relevant orbital elements (and filtering) to check for all relevant meteors for a check
