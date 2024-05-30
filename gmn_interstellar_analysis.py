@@ -36,7 +36,7 @@ from gmn_python_api import meteor_trajectory_reader
 from datetime import datetime
 
 # get all months
-from functions import get_all_months_by_year_list, check_conditions_interstellar, print_output
+from functions import get_all_months_by_year_list, check_conditions_interstellar, print_output_interstellar
 
 # -----------------------------------------------------------------------------------------------------------
 # color map  for graphs
@@ -162,7 +162,7 @@ for month_list in all_months:
 
             # printing in output for the conditions specified -- separate from the appending conditions
             output = ""
-            print_output(value, conditions[0],
+            print_output_interstellar(value, conditions[0],
                          vhel_larger_than_42[number], conditions[1], 
                          vhel_sigma[number], 
                          vinit[number], conditions[2],
