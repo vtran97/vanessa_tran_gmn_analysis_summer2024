@@ -24,110 +24,10 @@ from gmn_python_api import data_directory as dd
 from gmn_python_api import meteor_trajectory_reader
 
 # get all months
-from get_all_months import get_all_months_by_year_list
+from functions import get_all_months_by_year_list, check_conditions_orbital
 
 # for D values
 from d_value_meteor_class import Meteor
-
-# -----------------------------------------------------------------------------------------------------------
-# check conditions
-
-def check_conditions(a, a_min, a_max, 
-                     e, e_min, e_max, 
-                     i, i_min, i_max,
-                     peri, peri_min, peri_max,
-                     node, node_min, node_max,
-                     Pi, Pi_min, Pi_max,
-                     b, b_min, b_max,
-                     q, q_min, q_max,
-                     f, f_min, f_max,
-                     M, M_min, M_max,
-                     Q, Q_min, Q_max,
-                     n, n_min, n_max,
-                     T, T_min, T_max,
-                     TisserandJ, TisserandJ_min, TisserandJ_max):
-    '''checks for all orbital elements conditions -- optimize!!'''
-
-    conditions_list = []
-
-    if a > a_min and a < a_max :
-        conditions_list.append(True)
-
-    if e > e_min and e < e_max:
-        conditions_list.append(True)
-    
-    if i > i_min and i < i_max and i_min > 0 and i_max < 360:
-        conditions_list.append(True)
-    elif i_min < 0:
-        # editing the restrictions since i angle covers interval before and after zero degrees
-        # angle wrapping can be done for all of the other elements as well -- follow template below
-        i_sub_min = 360 + i_min
-        i_sub_max = 360
-        # reset i min to 0 for interval 
-        i_min = 0
-        if i > i_min and i < i_max or i < i_sub_max and i > i_sub_min:
-            conditions_list.append(True)
-    elif i_max > 360:
-        i_sub_min = 0
-        i_sub_max = i_max - 360
-        i_max = 360
-        if i > i_min and i < i_max or i < i_sub_max and i > i_sub_min:
-            conditions_list.append(True)
-
-    if peri > peri_min and peri < peri_max and peri_min > 0 and peri_max < 360:
-        conditions_list.append(True)
-    elif peri_min < 0:
-        peri_sub_min = 360 + peri_min
-        peri_sub_max = 360
-        peri_min = 0
-        if peri > peri_min and peri < peri_max or peri < peri_sub_max and peri > peri_sub_min:
-            conditions_list.append(True)
-    elif peri_max > 360:
-        peri_sub_min = 0
-        peri_sub_max = i_max - 360
-        peri_max = 360
-        if peri > peri_min and peri < peri_max or peri < peri_sub_max and peri > peri_sub_min:
-            conditions_list.append(True)
-
-    if node > node_min and node < node_max and node_min > 0 and node_max < 360:
-        conditions_list.append(True)
-    elif node_min < 0:
-        node_sub_min = 360 + node_min
-        node_sub_max = 360
-        node_min = 0
-        if node > node_min and node < node_max or node < node_sub_max and node > node_sub_min:
-            conditions_list.append(True)
-    elif node_max > 360:
-        node_sub_min = 0
-        node_sub_max = i_max - 360
-        node_max = 360
-        if node > node_min and node < node_max or node < node_sub_max and node > node_sub_min:
-            conditions_list.append(True)
-  
-    if Pi > Pi_min and Pi < Pi_max:
-        conditions_list.append(True)
-    if b > b_min and b < b_max:
-        conditions_list.append(True)
-    if q > q_min and q < q_max:
-        conditions_list.append(True)
-    if f > f_min and f < f_max:
-        conditions_list.append(True)
-    if M > M_min and M < M_max:
-        conditions_list.append(True)
-    if Q > Q_min and Q < Q_max:
-        conditions_list.append(True)
-    if n > n_min and n < n_max:
-        conditions_list.append(True)
-    if T > T_min and T < T_max:
-        conditions_list.append(True)
-    if TisserandJ > TisserandJ_min and TisserandJ < TisserandJ_max:
-        conditions_list.append(True)
-
-    if len(conditions_list) == 14:
-        return True
-    else:
-        return False
-    
 
 # -----------------------------------------------------------------------------------------------------------
 # dataminings starts here
@@ -172,10 +72,8 @@ system_T_orbital_period = []
 
 system_TisserandJ = []
 
+# if we're looking for multiple asteroid types, can create multiple lists :)
 bennu_asteroid_obj_list = []
-
-# arb as in arbitrary -- used for any non specific calculations for criteria for conditions later
-arb = [-10000, 9999] 
 
 # looping through all year data
 for month_list in all_months:
@@ -269,20 +167,26 @@ for month_list in all_months:
 
             # BENNU --------------------------------------------------------------------
 
-            if check_conditions(a, 1.126391025894812 - 0.2, 1.126391025894812 + 0.2,
-                                e, 0.2037450762416414 - 0.2, 0.2037450762416414 + 0.2,
-                                i, 6.03494377024794 - 10, 6.03494377024794 + 10,
-                                peri, 66.22306084084298 - 10, 66.22306084084298 + 10,
-                                node, 2.06086619569642 - 10, 2.06086619569642 + 10,
-                                Pi, arb[0], arb[1],
-                                b, arb[0], arb[1],
-                                q, arb[0], arb[1],
-                                f, arb[0], arb[1],
-                                M, arb[0], arb[1],
-                                Q, arb[0], arb[1],
-                                n, arb[0], arb[1],
-                                T, arb[0], arb[1],
-                                TisandJ, arb[0], arb[1]):
+            '''
+            for conditions, put the actual value and then add/subtract inside of the arguments. 
+            the code is designed to wrap around any angles as long as the angles are out of bounds. 
+            no need to convert degrees to their backrotation / forward rotation. 
+            see below for example of range ---> i min 
+            '''
+            if check_conditions_orbital(a, True, 1.126391025894812 - 0.2, 1.126391025894812 + 0.2,
+                                e, True,  0.2037450762416414 - 0.2, 0.2037450762416414 + 0.2,
+                                i, True,  6.03494377024794 - 10, 6.03494377024794 + 10,
+                                peri, True,  66.22306084084298 - 10, 66.22306084084298 + 10,
+                                node, True, 2.06086619569642 - 10, 2.06086619569642 + 10,
+                                Pi, False, 0, 0,
+                                b, False, 0, 0,
+                                q, False, 0, 0,
+                                f, False, 0, 0,
+                                M, False, 0, 0,
+                                Q, False, 0, 0,
+                                n, False, 0, 0,
+                                T, False, 0, 0,
+                                TisandJ, False, 0, 0):
                 
                 identifiers.append(identity)
 

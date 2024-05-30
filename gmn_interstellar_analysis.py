@@ -36,7 +36,7 @@ from gmn_python_api import meteor_trajectory_reader
 from datetime import datetime
 
 # get all months
-from get_all_months import get_all_months_by_year_list
+from functions import get_all_months_by_year_list, check_conditions_interstellar, print_output
 
 # -----------------------------------------------------------------------------------------------------------
 # color map  for graphs
@@ -51,99 +51,6 @@ white_viridis = LinearSegmentedColormap.from_list('white_viridis', [
     (0.8, '#78d151'),
     (1, '#fde624'),
 ], N=256)
-
-# -----------------------------------------------------------------------------------------------------------
-# function : printing output in python - can be edited to show more 
-
-def print_output(value=0, value_cutoff=5, 
-                 vhel=0, vhel_cutoff=50, 
-                 vhel_sigma=0, 
-                 vinit=0, vinit_cutoff=50, 
-                 qc=0, 
-                 identifier="", 
-                 stations='', 
-                 skyfit_script_identifier=''):
-    
-    # length for the text splits
-    cus_lens = [8,6]
-    res = []
-    start = 0
-
-    # prints the output give the above parameters
-    output = ""
-    if value > value_cutoff and vhel > vhel_cutoff and vinit < vinit_cutoff:
-
-        ''' 
-        # not needed right now -- modified to never have sigma = 0 entries 
-        if vhel_sigma_mod[number] == 0:
-            output += "||SIGMA = ZERO|| "
-        else:
-            output += "                 "
-        '''
-
-        # identity of meteor in GMN database
-        output += "||IDENTITY: " + str(identifier) + "|| "
-
-        # vhel (heliocentric velocity) according to GMN
-        txt = str(vhel)
-        if len(txt) <= 7: # string too short
-            while len(txt) != 7:
-                txt = txt + '0'
-        output += "||VHEL: " + txt + "|| "
-
-        # the sigma (sd) of vhel in GMN
-        if vhel_sigma != 0:
-            txt = str(vhel_sigma)
-            if len(txt) <= 6: # string too short
-                while len(txt) != 6:
-                    txt += '0'
-            output += "||SIGMA (VHEL): " + txt + "|| "
-        
-        # the Qc (convergence angle) according to GMN 
-        txt = str(qc)
-        if len(txt) <= 5: # string too short
-            while len(txt) != 5:
-                txt = txt + '0'
-        output += "||QC: " + txt + "|| "
-
-        # computed value for the number of error bars above 42km/s the measure vhel is 
-        txt = str(value)
-        if len(txt) <= 18: # string too short
-            while len(txt) != 18:
-                txt = txt + '0'
-        output += "||VALUE: " + txt + "|| "
-
-        # specific format for raw data --> Denis Vida
-        iden = str(identifier).split("_")[0]
-        for size in cus_lens:
-            res.append(iden[start : start + size])
-            start += size
-        txt = str(skyfit_script_identifier).split(".")[1]
-        output += "\n\t\t||SCRIPT IDENTIFIER FOR RAW: " + res[0] + "_" + res[1] + "." + txt + "|| " 
-
-        # stations involved in seeing the meteor
-        txt = ''
-        last = len(stations) - 1
-        for station in range(len(stations)): # printing it nicely and not in list with ''
-            if stations[station] != stations[last]:
-                txt += stations[station] + ", "
-            else:
-                txt += stations[station]
-        output += "||STATIONS: " + txt + "|| "
-
-        print(output)
-
-# -----------------------------------------------------------------------------------------------------------
-# function : checking conditions
-
-def check_conditions(value, value_cutoff,
-                     vhel, vhel_cutoff, 
-                     vhel_sigma,
-                     vinit, vinit_cutoff):
-    if value > value_cutoff and vhel_sigma !=0 and vhel > vhel_cutoff and vinit < vinit_cutoff:
-        return True
-    else:
-        return False
 
 # -----------------------------------------------------------------------------------------------------------
 # DATAMINING BEGINS HERE
@@ -240,7 +147,7 @@ for month_list in all_months:
                 # it is a ratio to see how many errors bars above 42 that meteor is (vhel)
 
             # getting only the best data with inputted conditions (see conditions above)
-            if check_conditions(value, conditions[0],
+            if check_conditions_interstellar(value, conditions[0],
                     vhel_larger_than_42[number], conditions[1],
                     vhel_sigma[number], 
                     vinit[number], conditions[2]): # this will return True or False
