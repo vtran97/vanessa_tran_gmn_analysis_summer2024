@@ -104,7 +104,7 @@ def check_conditions_interstellar(value, value_cutoff,
 print output for potential interstellar meteors
 '''
 
-def print_output(value=0, value_cutoff=5, 
+def print_output_interstellar(value=0, value_cutoff=5, 
                  vhel=0, vhel_cutoff=50, 
                  vhel_sigma=0, 
                  vinit=0, vinit_cutoff=50, 
