@@ -24,17 +24,18 @@ Resources
 Files
 
 - functions.py
-  - all functions organized by category 
+  - all general functions organized by category (interstellar, orbital)
+  - condition checking, wrapping angles, etc.
 
 - gmn_interstellar_analysis.py
   - code to search for interstellar meteors
   - conditions can be specified in conditions list
  
-- orbital_elements.py
+- orbital_elements_analysis.py
   - class for getting all relevant orbital elements (and filtering) to check for all relevant meteors for a check
   - used with d_value_meteor_class.py
 
 - d_value_meteor_class.py
-  - class for Bennu meteor orbital element to get d value
-  - class adapted from the Orbit class from sbpy
+  - CLASS for Bennu meteor orbital element to get d value
+  - adapted from the Orbit class from sbpy (child class, changes to work with self and obj instead of only Horizons data)
  
