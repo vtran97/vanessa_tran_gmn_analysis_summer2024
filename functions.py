@@ -213,104 +213,113 @@ condition checking for all orbital elements
 '''
 
 def check_conditions_orbital(a, active_a, a_min, a_max, 
-                     e, active_e, e_min, e_max, 
-                     i, active_i, i_min, i_max,
-                     peri, active_peri, peri_min, peri_max,
-                     node, active_node, node_min, node_max,
-                     Pi, active_Pi, Pi_min, Pi_max,
-                     b, active_b, b_min, b_max,
-                     q, active_q, q_min, q_max,
-                     f, active_f, f_min, f_max,
-                     M, active_M, M_min, M_max,
-                     Q, active_Q, Q_min, Q_max,
-                     n, active_n, n_min, n_max,
-                     T, active_T, T_min, T_max,
-                     TisserandJ, active_TJ, TisserandJ_min, TisserandJ_max):
+                             e, active_e, e_min, e_max, 
+                             i, active_i, i_min, i_max,
+                             peri, active_peri, peri_min, peri_max,
+                             node, active_node, node_min, node_max,
+                             Pi, active_Pi, Pi_min, Pi_max,
+                             b, active_b, b_min, b_max,
+                             q, active_q, q_min, q_max,
+                             f, active_f, f_min, f_max,
+                             M, active_M, M_min, M_max,
+                             Q, active_Q, Q_min, Q_max,
+                             n, active_n, n_min, n_max,
+                             T, active_T, T_min, T_max,
+                             TisserandJ, active_TJ, TisserandJ_min, TisserandJ_max):
     '''checks for all orbital elements conditions -- optimize!!'''
 
     conditions_list = []
 
     if a > a_min and a < a_max or active_a == False:
         conditions_list.append(True)
+    else:
+        return False
 
     if e > e_min and e < e_max or active_e == False:
         conditions_list.append(True)
+    else:
+        return False
     
     if i > i_min and i < i_max and i_min > 0 and i_max < 360 or active_i == False:
         conditions_list.append(True)
     elif i_min < 0 or i_max > 360:
         if wrap_angle(i, i_min, i_max) == True:
             conditions_list.append(True)
-        else:
-            pass
-
-    if peri > peri_min and peri < peri_max and peri_min > 0 and peri_max < 360 or active_peri == False:
+    else:
+        return False
+    
+    if peri > peri_min and peri < peri_max and peri_min >= 0 and peri_max <= 360 or active_peri == False:
         conditions_list.append(True)
-    elif peri_min < 0 or peri_max > 360:
+    elif peri_min <= 0 or peri_max >= 360:
         if wrap_angle(peri, peri_min, peri_max) == True:
             conditions_list.append(True)
-        else:
-            pass
+    else:
+        return False
 
-    if node > node_min and node < node_max and node_min > 0 and node_max < 360 or active_node == False:
+    if node > node_min and node < node_max and node_min >= 0 and node_max <= 360 or active_node == False:
         conditions_list.append(True)
-    elif node_min < 0 or node_max > 360:
+    elif node_min <= 0 or node_max >= 360:
         if wrap_angle(node, node_min, node_max) == True:
             conditions_list.append(True)
-        else:
-            pass
-
-    if len(conditions_list) != 5:
+    else:
         return False
   
-    if Pi > Pi_min and Pi < Pi_max and Pi_min > 0 and Pi_max < 360 or active_Pi == False:
+    if Pi > Pi_min and Pi < Pi_max and Pi_min >= 0 and Pi_max <= 360 or active_Pi == False:
         conditions_list.append(True)
-    elif Pi_min < 0 or Pi_max > 360:
+    elif Pi_min <= 0 or Pi_max >= 360:
         if wrap_angle(Pi, Pi_min, Pi_max) == True:
             conditions_list.append(True)
-        else:
-            pass
+    else:
+        return False
 
-    if b > b_min and b < b_max and b_min > 0 and b_max < 360 or active_b == False:
+    if b > b_min and b < b_max and b_min >= 0 and b_max <= 360 or active_b == False:
         conditions_list.append(True)
-    elif b_min < 0 or b_max > 360:
+    elif b_min <= 0 or b_max >= 360:
         if wrap_angle(b, b_min, b_max) == True:
             conditions_list.append(True)
-        else:
-            pass
+    else:
+        return False
 
     if q > q_min and q < q_max or active_q == False:
         conditions_list.append(True)
+    else:
+        return False
 
-    if f > f_min and f < f_max and f_min > 0 and f_max < 360 or active_f == False:
+    if f > f_min and f < f_max and f_min >= 0 and f_max <= 360 or active_f == False:
         conditions_list.append(True)
-    elif f_min < 0 or f_max > 360:
+    elif f_min <= 0 or f_max >= 360:
         if wrap_angle(f, f_min, f_max) == True:
             conditions_list.append(True)
-        else:
-            pass
+    else:
+        return False
 
-    if M > M_min and M < M_max and M_min > 0 and M_max < 360 or active_M == False:
+    if M > M_min and M < M_max and M_min >= 0 and M_max <= 360 or active_M == False:
         conditions_list.append(True)
-    elif M_min < 0 or M_max > 360:
+    elif M_min <= 0 or M_max >= 360:
         if wrap_angle(M, M_min, M_max) == True:
             conditions_list.append(True)
-        else:
-            pass
-
-    if len(conditions_list) != 10:
+    else:
         return False
 
     if Q > Q_min and Q < Q_max or active_Q == False:
         conditions_list.append(True)
+    else:
+        return False
+    
     if n > n_min and n < n_max or active_n == False:
         conditions_list.append(True)
+    else:
+        return False
+    
     if T > T_min and T < T_max or active_T == False:
         conditions_list.append(True)
+    else:
+        return False
+    
     if TisserandJ > TisserandJ_min and TisserandJ < TisserandJ_max or active_TJ == False:
         conditions_list.append(True)
+    else:
+        return False
 
     if len(conditions_list) == 14:
         return True
-    else:
-        return False
