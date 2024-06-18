@@ -66,6 +66,7 @@ system_calc = []
 system_qc = []
 system_stations = []
 system_skyfit_script_identifiers = []
+system_b_ht =[]
 
 # looping through all years
 for month_list in all_months:
@@ -81,6 +82,7 @@ for month_list in all_months:
     best_qc = []
     best_stations = []
     best_skyfit_script_identifiers = []
+    best_beg_heights = []
 
     # looping through each month in the year
     for month in month_list:
@@ -100,6 +102,7 @@ for month_list in all_months:
         qc = []
         stations = []
         skyfit_script_identifiers = []
+        beg_heights = []
 
         # iterating through the traj_df using vhel 
         index = 0
@@ -132,6 +135,9 @@ for month_list in all_months:
                 # script skyfit identifers
                 skyfit_script_identifiers.append(traj_df['Beginning (UTC Time)'][index])
 
+                # beginnning heights
+                beg_heights.append(traj_df['HtBeg (km)'][index])
+
             index += 1
 
         # -----------------------------------------------------------------------------------------------------------
@@ -139,7 +145,7 @@ for month_list in all_months:
 
         # ADJUST NARROWED CONDITIONS HERE! 
         # conditions = value, vhel, vinit
-        conditions = [5, 49, 52]
+        conditions = [5, 42.5, 50]
 
         for number in range(len(vhel_larger_than_42)):
             value = (vhel_larger_than_42[number] - 42) / vhel_sigma[number]
@@ -150,7 +156,9 @@ for month_list in all_months:
             if check_conditions_interstellar(value, conditions[0],
                     vhel_larger_than_42[number], conditions[1],
                     vhel_sigma[number], 
-                    vinit[number], conditions[2]): # this will return True or False
+                    vinit[number], conditions[2]) and qc[number] > 20 \
+                    and vhel_larger_than_42[number] > 44 and vhel_larger_than_42[number] < 45 \
+                    and beg_heights[number] > 95 and beg_heights[number] < 120: 
                 
                 # appending to lists
                 calculation_best_data.append(value)
@@ -161,8 +169,8 @@ for month_list in all_months:
                 best_skyfit_script_identifiers.append(skyfit_script_identifiers[number])
 
             # printing in output for the conditions specified -- separate from the appending conditions
-            output = ""
-            print_output_interstellar(value, conditions[0],
+                output = ""
+                print_output_interstellar(value, conditions[0],
                          vhel_larger_than_42[number], conditions[1], 
                          vhel_sigma[number], 
                          vinit[number], conditions[2],
@@ -222,7 +230,7 @@ d = {'Vinit (km/s)'      : tuple(system_vinit),
      'Qc (deg)'          : tuple(system_qc),
      'Identifiers'       : tuple(system_identifiers)}
 dataframe = pd.DataFrame(d)
-
+'''
 # creating plot using dataframe and ax
 # c = colored by Qc
 ax = dataframe.plot.scatter(x='Vinit (km/s)', y='[(vhel - 42) / σ]', 
@@ -236,7 +244,7 @@ for idx, row in dataframe.iterrows():
 
 plt.grid()
 plt.show()
-
+'''
 # -----------------------------------------------------------------------------------------------------------
 # DENSITY MAP
 '''

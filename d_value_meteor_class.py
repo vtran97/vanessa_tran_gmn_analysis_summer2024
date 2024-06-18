@@ -25,6 +25,14 @@ class Meteor:
         self.i = i
         self.omega = omega
         self.w = w
+
+    def get_attr(self):
+        print('identity :', self.identity)
+        print('e =', self.e)
+        print('q =', self.q)
+        print('i =', self.i)
+        print('omega =', self.omega)
+        print('w =', self.w)
         
     def D_criterion(self, obj, version='sh'):
         # THIS FUNCTION IS ADAPTED FROM ORIGINAL FUNCTION FROM SBPY !!! using self and obj instead 
@@ -129,9 +137,9 @@ class Meteor:
         return d
     
 #----------------------------TESTS----------------------------
-'''
-# Asteroid(e, q, i, omega [NODE], w [PERI])
 
+# Asteroid(e, q, i, omega [NODE], w [PERI])
+'''
 bennu = Meteor(.2037450762416414, .8968944004459729, 6.03494377024794, 2.06086619569642, 66.22306084084298) # taken from Horizons
 ba14 = Meteor(.6662529585051395, 1.008577198658916, 18.91867269133972, 180.5336813221037, 351.8967232772523)
 p_ast = Meteor(.6730850153945767, .9960459017518296, 10.42219597127401, 190.9484957698451, 343.3104746438897)

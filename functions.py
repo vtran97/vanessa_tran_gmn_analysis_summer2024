@@ -7,7 +7,7 @@ May 1st to August 16 (2024)
 all functions
 '''
 
-#---------------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------
 # general functions
 
 '''
@@ -72,12 +72,12 @@ def get_all_months_by_year_list():
                 # (not getting results from the future)
 
                 while not done:
-                    for i in range(len(year_month_list)):
-                        if year_month_list[i] == current_month:
-                            cut_list.append(year_month_list[i])
+                    for inx in range(len(year_month_list)):
+                        if year_month_list[inx] == current_month:
+                            cut_list.append(year_month_list[inx])
                             done = True
-                        if year_month_list[i] != current_month and done == False:
-                            cut_list.append(year_month_list[i])
+                        if year_month_list[inx] != current_month and done == False:
+                            cut_list.append(year_month_list[inx])
 
                 all_months.append(cut_list)
 
@@ -175,14 +175,14 @@ def print_output_interstellar(value=0, value_cutoff=5,
         last = len(stations) - 1
         for station in range(len(stations)): # printing it nicely and not in list with ''
             if stations[station] != stations[last]:
-                txt += stations[station] + ", "
+                txt += stations[station] + ","
             else:
                 txt += stations[station]
         output += "||STATIONS: " + txt + "|| "
 
         print(output)
 
-#---------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------
 # orbital elements functions
 
 '''
@@ -191,22 +191,30 @@ wraps angles for conndition checking for elements that deal with degrees
 
 def wrap_angle(elem, elem_min, elem_max):
 
+    #print("wrap angle ****")
+    #print("elem", elem)
+
     if elem_min < 0:
+        #print('min less than 0')
         # editing the restrictions since angle covers interval before and after zero degrees
         elem_sub_min = 360 + elem_min
+        #print('elem sub min', elem_sub_min)
         elem_sub_max = 360
+        #print('elem sub max', elem_sub_max)
         # reset min to 0 for degrees
         elem_min = 0
         if elem > elem_min and elem < elem_max or elem < elem_sub_max and elem > elem_sub_min:
             return True
-    elif elem_max > 360:
+    if elem_max > 360:
+        #print("max more than 360")
         elem_sub_min = 0
+        #print("elem sub min", elem_sub_min)
         elem_sub_max = elem_max - 360
+        #print("elem sub max", elem_sub_max)
         elem_max = 360
         if elem > elem_min and elem < elem_max or elem < elem_sub_max and elem > elem_sub_min:
             return True
-    else:
-        return False
+    return False
 
 '''
 condition checking for all orbital elements 
@@ -216,110 +224,151 @@ def check_conditions_orbital(a, active_a, a_min, a_max,
                              e, active_e, e_min, e_max, 
                              i, active_i, i_min, i_max,
                              peri, active_peri, peri_min, peri_max,
-                             node, active_node, node_min, node_max,
-                             Pi, active_Pi, Pi_min, Pi_max,
-                             b, active_b, b_min, b_max,
-                             q, active_q, q_min, q_max,
-                             f, active_f, f_min, f_max,
-                             M, active_M, M_min, M_max,
-                             Q, active_Q, Q_min, Q_max,
-                             n, active_n, n_min, n_max,
-                             T, active_T, T_min, T_max,
-                             TisserandJ, active_TJ, TisserandJ_min, TisserandJ_max):
-    '''checks for all orbital elements conditions -- optimize!!'''
+                             node, active_node, node_min, node_max):
+    '''checks for all elements conditions -- optimize!!'''
 
-    conditions_list = []
+    # print("---------------------- CHECK")
 
     if a > a_min and a < a_max or active_a == False:
-        conditions_list.append(True)
+        pass
     else:
         return False
 
-    if e > e_min and e < e_max or active_e == False:
-        conditions_list.append(True)
+    if e > e_min and e < e_max or active_e == False: # we don't worry about e being negative, because no e values are actually negative 
+        pass
     else:
         return False
     
     if i > i_min and i < i_max and i_min > 0 and i_max < 360 or active_i == False:
-        conditions_list.append(True)
+        pass
+        #print("Pass intial i")
     elif i_min < 0 or i_max > 360:
+        #print("i", i)
+        #print("i min", i_min)
+        #print("I max", i_max)
         if wrap_angle(i, i_min, i_max) == True:
-            conditions_list.append(True)
+            #print('pass second i')
+            pass
+        else:
+            return False
     else:
         return False
     
     if peri > peri_min and peri < peri_max and peri_min >= 0 and peri_max <= 360 or active_peri == False:
-        conditions_list.append(True)
+        pass
     elif peri_min <= 0 or peri_max >= 360:
         if wrap_angle(peri, peri_min, peri_max) == True:
-            conditions_list.append(True)
+            pass
+        else:
+            return False
     else:
         return False
 
     if node > node_min and node < node_max and node_min >= 0 and node_max <= 360 or active_node == False:
-        conditions_list.append(True)
+        pass
     elif node_min <= 0 or node_max >= 360:
         if wrap_angle(node, node_min, node_max) == True:
-            conditions_list.append(True)
-    else:
-        return False
-  
-    if Pi > Pi_min and Pi < Pi_max and Pi_min >= 0 and Pi_max <= 360 or active_Pi == False:
-        conditions_list.append(True)
-    elif Pi_min <= 0 or Pi_max >= 360:
-        if wrap_angle(Pi, Pi_min, Pi_max) == True:
-            conditions_list.append(True)
+            pass
+        else:
+            return False
     else:
         return False
 
-    if b > b_min and b < b_max and b_min >= 0 and b_max <= 360 or active_b == False:
-        conditions_list.append(True)
-    elif b_min <= 0 or b_max >= 360:
-        if wrap_angle(b, b_min, b_max) == True:
-            conditions_list.append(True)
-    else:
-        return False
-
-    if q > q_min and q < q_max or active_q == False:
-        conditions_list.append(True)
-    else:
-        return False
-
-    if f > f_min and f < f_max and f_min >= 0 and f_max <= 360 or active_f == False:
-        conditions_list.append(True)
-    elif f_min <= 0 or f_max >= 360:
-        if wrap_angle(f, f_min, f_max) == True:
-            conditions_list.append(True)
-    else:
-        return False
-
-    if M > M_min and M < M_max and M_min >= 0 and M_max <= 360 or active_M == False:
-        conditions_list.append(True)
-    elif M_min <= 0 or M_max >= 360:
-        if wrap_angle(M, M_min, M_max) == True:
-            conditions_list.append(True)
-    else:
-        return False
-
-    if Q > Q_min and Q < Q_max or active_Q == False:
-        conditions_list.append(True)
+    '''if RAGeo > rageo_min and RAGeo < rageo_max and rageo_min >= 0 and rageo_max <= 360 \
+        or active_rageo == False:
+        pass
+    elif rageo_min <= 0 or rageo_max >= 360:
+        if wrap_angle(RAGeo, rageo_min, rageo_max) == True:
+            pass
     else:
         return False
     
-    if n > n_min and n < n_max or active_n == False:
-        conditions_list.append(True)
-    else:
-        return False
-    
-    if T > T_min and T < T_max or active_T == False:
-        conditions_list.append(True)
-    else:
-        return False
-    
-    if TisserandJ > TisserandJ_min and TisserandJ < TisserandJ_max or active_TJ == False:
-        conditions_list.append(True)
+    if Decgeo > decgeo_min and Decgeo < decgeo_max and decgeo_min >= 0 and decgeo_max <= 360 \
+        or active_decgeo == False:
+        pass
+    elif decgeo_min <= 0 or decgeo_max >= 360:
+        if wrap_angle(Decgeo, decgeo_min, decgeo_max) == True:
+            pass
     else:
         return False
 
-    if len(conditions_list) == 14:
-        return True
+    if Vgeo > vgeo_min and Vgeo < vgeo_max or active_vgeo == False:
+        pass
+    else:
+        return False'''
+    
+    # print("*******************")
+
+    return True
+
+def narrow_dataframe_orbital_5d(dataframe, mods, conds):
+
+    candidates = []
+    vol = (mods[0]*2) ** 2 * (mods[1]*2) ** 3
+
+    for j in range(len(dataframe['semi major axis (a)'])):
+
+        cond_check = []
+
+        # a
+        if dataframe['semi major axis (a)'][j] > conds[1] - mods[0] and \
+            dataframe['semi major axis (a)'][j] < conds[1] + mods[0] :
+            pass
+        else:
+            cond_check.append(False)
+        
+        # e
+        if dataframe['eccentricity (e)'][j] > conds[3] - mods[0] and \
+            dataframe['eccentricity (e)'][j] < conds[3] + mods[0] :
+            pass
+        else:
+            cond_check.append(False)
+        
+        # i
+        if dataframe['inclination (i)'][j] > conds[5] - mods[1] and \
+            dataframe['inclination (i)'][j] < conds[5] + mods[1] \
+            and conds[5] - mods[1] > 0 and conds[5] - mods[1] < 360:
+            pass
+        elif conds[5] - mods[1] < 0 or conds[5] - mods[1] > 360:
+            if wrap_angle(dataframe['inclination (i)'][j], conds[5] - mods[1], conds[5] + mods[1]) == True:
+                pass
+            else:
+                cond_check.append(False)
+        else:
+            cond_check.append(False)
+        
+        # peri
+        if dataframe['perihelion arugment (peri)'][j] > conds[7] - mods[1] \
+            and dataframe['perihelion arugment (peri)'][j] < conds[7] + mods[1] \
+            and conds[7] - mods[1] > 0 and conds[7] - mods[1] < 360:
+            pass
+        elif conds[7] - mods[1] < 0 or conds[7] - mods[1] > 360:
+            if wrap_angle(dataframe['perihelion arugment (peri)'][j], conds[7] - mods[1], 
+                          conds[7] + mods[1]) == True:
+                pass
+            else:
+                cond_check.append(False)
+        else:
+            cond_check.append(False)
+        
+        # node
+        if dataframe['ascending node (node)'][j] > conds[9] - mods[1] \
+            and dataframe['ascending node (node)'][j] < conds[9] + mods[1] \
+            and conds[9] - mods[1] > 0 and conds[9] - mods[1] < 360:
+            pass
+        elif conds[9] - mods[1] < 0 or conds[9] - mods[1] > 360:
+            if wrap_angle(dataframe['ascending node (node)'][j], conds[9] - mods[1], 
+                          conds[9] + mods[1]) == True:
+                pass
+            else:
+                cond_check.append(False)
+        else:
+            cond_check.append(False)
+
+        if False in cond_check:
+            pass
+        if False not in cond_check:
+            candidates.append(dataframe['candidates'][j])
+
+    return (vol, candidates)
+        
