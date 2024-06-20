@@ -4,16 +4,7 @@ GMN datamining
 Vanessa Tran (vtran97@uwo.ca)
 May 1st to August 16 (2024)
 
-This file searches through the entire GMN database and searches through orbital elements using
-min and max values
-- used primarily for Bennu searches (2024-05-29)
-- asteroid function a child class of Orbit class from sbpy
-    - the function D_Criterion is edited; to work with GMN data, it has been changed to work 
-      with self and obj instead of with two bodies given through the from_horizons function of 
-      the Orbit class from sbpy
-    - the order of self nad obj DOES NOT matter -- it will give you the same value no matter 
-      which way you decide to type your self/obj order
-    - 
+Just filtering the semi major axis to see if there's a normal distribution (there isn't) 
 '''
 
 # -----------------------------------------------------------------------------------------------------------
