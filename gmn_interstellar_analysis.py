@@ -157,9 +157,9 @@ for month_list in all_months:
                     vhel_larger_than_42[number], conditions[1],
                     vhel_sigma[number], 
                     vinit[number], conditions[2]) and qc[number] > 20 \
-                    and vhel_larger_than_42[number] > 44 and vhel_larger_than_42[number] < 45 \
                     and beg_heights[number] > 95 and beg_heights[number] < 120: 
-                
+                    #and vhel_larger_than_42[number] > 46.5 and vhel_larger_than_42[number] < 47 \
+                    
                 # appending to lists
                 calculation_best_data.append(value)
                 vinit_best_data_for_plot.append(vinit[number])

@@ -485,7 +485,7 @@ plt.grid()
 plt.show()
 '''
 # bennu -- good interval ------------------------------------------------------------------------------------------------------
-'''
+
 # Asteroid(e, q, i, omega [NODE], w [PERI])
 bennu_ephemeris = Meteor('Bennu', 0.2037450762416414, 0.8968944004459729, 6.03494377024794, 2.06086619569642, 66.22306084084298) 
 bennu_from_horizon_updated = Meteor('Bennu', 0.2037482514536186, 0.89654206, 6.03301417, 1.98511762, 66.37138491)
@@ -534,11 +534,15 @@ for meteor_obj in get_npuv[1]:
   D_SH_e = bennu_ephemeris.D_criterion(meteor_obj)
   # Drummond function
   D_D_e = bennu_ephemeris.D_criterion(meteor_obj, version='d')
+  # hybrid
+  D_HYB_e = bennu_ephemeris.D_criterion(meteor_obj, version='h')
 
   # Southworth & Hawkins function
   D_SH_fhu = bennu_from_horizon_updated.D_criterion(meteor_obj)
   # Drummond function
   D_D_fhu = bennu_from_horizon_updated.D_criterion(meteor_obj, version='d')
+  # hybrid
+  D_HYB_fhu = bennu_ephemeris.D_criterion(meteor_obj, version='h')
 
   print("\n-------------")
   meteor_obj.get_attr()
@@ -546,10 +550,12 @@ for meteor_obj in get_npuv[1]:
   print("\nFROM HORIZONS (LATEST EPOCH) - 2460460.2864766")
   print('D_SH', D_SH_fhu)
   print('D_D', D_D_fhu)
+  print('D HYBRID', D_HYB_e)
 
   print("\nEPHEMERIS - WEB APP - 2455562.5")
   print('D_SH', D_SH_e)
   print('D_D', D_D_e)
+  print('D HYBRID', D_HYB_fhu)
 
   print("\nDifference")
   print("D_SH", abs(D_SH_e - D_SH_fhu))
@@ -583,7 +589,7 @@ plt.ylabel("number per unit volume (ln)")
 plt.title("npuv 5d : bennu (ln)")
 plt.grid()
 plt.show()
-'''
+
 # 433 eros -- good interval ------------------------------------------------------------------------------------------------------
 '''
 # Asteroid(e, q, i, omega [NODE], w [PERI])
@@ -604,7 +610,7 @@ modifiers_5d = [0.2,
 get_npuv = get_number_per_unit_volume(modifiers_5d, conds_eros)
 dataframe = get_npuv[0]
 
-for idx in range(20):
+for idx in range(30):
 
     ndo5d = narrow_dataframe_orbital_5d(dataframe, modifiers_5d, conds_eros)
     units_per_vol = len(ndo5d[1]) / ndo5d[0]
@@ -689,7 +695,7 @@ modifiers_5d = [0.2,
 get_npuv = get_number_per_unit_volume(modifiers_5d, conds_itokawa)
 dataframe = get_npuv[0]
 
-for idx in range(20):
+for idx in range(30):
 
     ndo5d = narrow_dataframe_orbital_5d(dataframe, modifiers_5d, conds_itokawa)
     units_per_vol = len(ndo5d[1]) / ndo5d[0]
@@ -755,7 +761,7 @@ plt.grid()
 plt.show()
 '''
 # Toutatis -- good interval ------------------------------------------------------------------------------------------------------
-
+'''
 # Asteroid(e, q, i, omega [NODE], w [PERI])
 toutatis = Meteor('Toutatis', 0.624758896480083, 0.9545113126851149, 0.4480680353844077, 125.3549352905831, 277.868771555242)
 
@@ -838,9 +844,9 @@ plt.ylabel("number per unit volume (ln)")
 plt.title("npuv 5d : toutatis (ln)")
 plt.grid()
 plt.show()
-
+'''
 # Ryugu -- good interval ------------------------------------------------------------------------------------------------------
-
+'''
 # Asteroid(e, q, i, omega [NODE], w [PERI])
 ryugu = Meteor('Ryugu', 0.1910659421644889, 0.963451484489286, 5.866516749812472, 251.2954193296629, 211.6156610065788)
 
@@ -923,7 +929,7 @@ plt.ylabel("number per unit volume (ln)")
 plt.title("npuv 5d : ryugu (ln)")
 plt.grid()
 plt.show()
-
+'''
 # Didymos -- good interval ------------------------------------------------------------------------------------------------------
 
 # Asteroid(e, q, i, omega [NODE], w [PERI])
