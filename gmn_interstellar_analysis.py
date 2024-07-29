@@ -68,6 +68,8 @@ system_stations = []
 system_skyfit_script_identifiers = []
 system_b_ht =[]
 
+counter = 0
+
 # looping through all years
 for month_list in all_months:
 
@@ -145,7 +147,7 @@ for month_list in all_months:
 
         # ADJUST NARROWED CONDITIONS HERE! 
         # conditions = value, vhel, vinit
-        conditions = [5, 42.5, 50]
+        conditions = [5, 43, 50]
 
         for number in range(len(vhel_larger_than_42)):
             value = (vhel_larger_than_42[number] - 42) / vhel_sigma[number]
@@ -157,8 +159,8 @@ for month_list in all_months:
                     vhel_larger_than_42[number], conditions[1],
                     vhel_sigma[number], 
                     vinit[number], conditions[2]) and qc[number] > 20 \
+                    and vhel_larger_than_42[number] > 43.9 \
                     and beg_heights[number] > 95 and beg_heights[number] < 120: 
-                    #and vhel_larger_than_42[number] > 46.5 and vhel_larger_than_42[number] < 47 \
                     
                 # appending to lists
                 calculation_best_data.append(value)
@@ -178,6 +180,8 @@ for month_list in all_months:
                          identifiers[number], 
                          stations[number], 
                          skyfit_script_identifiers[number])
+                
+                counter += 1
 
     '''
     # YEARLY GRAPHS
@@ -223,6 +227,8 @@ plt.show()
 # GRAPH SORTED BY QC
 
 plt.rcParams.update({'font.size':30})
+
+print(counter)
 
 # creating pandas dataframe so that we can colour-code according to a third variable and identify using a fourth 
 d = {'Vinit (km/s)'      : tuple(system_vinit), 

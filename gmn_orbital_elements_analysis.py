@@ -36,6 +36,9 @@ from d_value_meteor_class import Meteor
 # math
 import math
 
+# change font size
+plt.rcParams.update({'font.size':30})
+
 # -----------------------------------------------------------------------------------------------------------
 # dataminings starts here
 # -----------------------------------------------------------------------------------------------------------
@@ -48,6 +51,9 @@ def get_number_per_unit_volume(mods, cond):
 
   asteroid_list = []
   #asteroid_obj_list = []
+
+  unit_per_volume_list = []
+  volume_list = []
 
   #year = month_list[0].split("-")[0]
 
@@ -80,6 +86,10 @@ def get_number_per_unit_volume(mods, cond):
   # nonconditional
 
   q_peri_distance = []
+
+  vinit = []
+
+  skyfit_identifiers = []
 
   '''Pi_peri_longitude = []
 
@@ -116,6 +126,10 @@ def get_number_per_unit_volume(mods, cond):
 
       # looping through each month in the year
       for month in month_list:
+          
+        month_split_date = month.split("-")
+
+        if month_split_date[1] == "09" or month_split_date[1] == "10":
 
           # Analyse recorded meteor data monthly 
           traj_file_content = dd.get_monthly_file_content_by_date(month)
@@ -179,6 +193,10 @@ def get_number_per_unit_volume(mods, cond):
 
               Vgeo = traj_df['Vgeo (km/s)'][ix]
 
+              speed = traj_df['Vinit (km/s)'][ix]
+
+              skyfit_script_identifier = traj_df['Beginning (UTC Time)'][ix]
+
 
               # BENNU --------------------------------------------------------------------
 
@@ -228,6 +246,8 @@ def get_number_per_unit_volume(mods, cond):
 
                   decgeo.append(Decgeo)
 
+                  skyfit_identifiers.append(skyfit_script_identifier)
+
                   '''# nonconditional
 
                   Pi_peri_longitude.append(Pi) 
@@ -235,6 +255,8 @@ def get_number_per_unit_volume(mods, cond):
                   b_peri_latitude.append(b) 
                   '''
                   q_peri_distance.append(q) 
+
+                  vinit.append(speed)
                   '''
                   f_true_anomaly.append(f) 
 
@@ -262,10 +284,9 @@ def get_number_per_unit_volume(mods, cond):
 
                   Qc.append(qc)'''
 
-                  # create asteroid object and append to list to check against Bennu later
+                  # create asteroid object and append to list to check against other ast later
 
                   obj = Meteor(identity, e, q, i, node, peri)
-                  # print("asteroid obj created")
                   asteroid_list.append(obj)
               
       # add year to system lists
@@ -287,65 +308,6 @@ def get_number_per_unit_volume(mods, cond):
       system_ascending_node += ascending_node
       system_sigma_ascending_node += sigma_ascending_node
       '''
-      # -----------------------------------------------------------------------------------------------------------
-      # BENNU
-      # check for d values --> use the D criterion
-      '''
-      # Asteroid(e, q, i, omega [NODE], w [PERI])
-      bennu_ephemeris = Meteor('Bennu', 0.2037450762416414, 0.8968944004459729, 6.03494377024794, 2.06086619569642, 66.22306084084298) 
-      # bennu info taken from Horizons Web Application - 101955 Bennu (1999 RQ36)
-      # for extra info : https://ssd.jpl.nasa.gov/horizons/manual.html#search
-
-      bennu_from_horizon_updated = Meteor('Bennu', 0.2037482514536186, 0.89654206, 6.03301417, 1.98511762, 66.37138491)
-      # bennu info taken from the from_horizons method and printed -- these are likely updated? 
-
-      index = 0
-
-      # try bennu against all other potential asteroids
-      for meteor_obj in bennu_asteroid_obj_list:
-
-        # Southworth & Hawkins function
-        D_SH_e = bennu_ephemeris.D_criterion(meteor_obj)
-        # Drummond function
-        D_D_e = bennu_ephemeris.D_criterion(meteor_obj, version='d')
-
-        # Southworth & Hawkins function
-        D_SH_fhu = bennu_from_horizon_updated.D_criterion(meteor_obj)
-        # Drummond function
-        D_D_fhu = bennu_from_horizon_updated.D_criterion(meteor_obj, version='d')
-
-        print("\n-------------")
-        print(meteor_obj.identity)
-
-        print("\nSD Error")
-        print("a =", system_sigma_a_semi_major_axis[index])
-        print("e =", system_sigma_eccentricity[index])
-        print("i =", system_sigma_inclination[index])
-        print("node =", system_sigma_ascending_node[index])
-        print("peri =", system_sigma_peri_argument[index])
-        print()
-        print("Duration (sec_ :", system_duration[index])
-        print("Peak (Abs Mag) :", system_peak_abs_mag[index])
-        print("Peak height (km) :", system_peak_height[index])
-        print("F (param) :", system_F_param[index])
-        print("Mass (kg), tau = 0.7% :", system_mass_tau[index])
-        print("Qc (deg) :", system_Qc[index])
-
-        print("\nFROM HORIZONS (LATEST EPOCH) - 2460460.2864766")
-        print('D_SH', D_SH_fhu)
-        print('D_D', D_D_fhu)
-
-        print("\nEPHEMERIS - WEB APP - 2455562.5")
-        print('D_SH', D_SH_e)
-        print('D_D', D_D_e)
-
-        print("\nDifference")
-        print("D_SH", abs(D_SH_e - D_SH_fhu))
-        print("D_D", abs(D_D_e - D_D_fhu))
-        print("-------------")
-
-        index += 1
-        '''
 
       # check aei space -------------------------------------------
       '''
@@ -357,12 +319,15 @@ def get_number_per_unit_volume(mods, cond):
       near the asteroid's aei, then the number of meteors per unit volume should drop gradually to the 
       background level as you increase your sampling volume.
       '''
-  d = {'candidates' : tuple(identifiers), 
-       'semi major axis (a)' : tuple(a_semi_major_axis), 
-       'eccentricity (e)' : tuple(eccentricity), 
-       'inclination (i)' : tuple(inclination), 
+  d = {'candidates'                 : tuple(identifiers), 
+       'semi major axis (a)'        : tuple(a_semi_major_axis), 
+       'eccentricity (e)'           : tuple(eccentricity), 
+       'inclination (i)'            : tuple(inclination), 
        'perihelion arugment (peri)' : tuple(peri_argument), 
-       'ascending node (node)' : tuple(ascending_node)}
+       'ascending node (node)'      : tuple(ascending_node), 
+       'rageo'                      : tuple(rageo), 
+       'decgeo'                     : tuple(decgeo), 
+       'vinit'                      : tuple(vinit)}
   df = pd.DataFrame(d)
   
   '''print("'df within function'")
@@ -382,72 +347,10 @@ def get_number_per_unit_volume(mods, cond):
   unit_per_volume_list.append(number_per_unit_volume)
   volume_list.append(volume)
 
-  return df,asteroid_list
+  return df,asteroid_list,unit_per_volume_list,volume_list
 
 # run values for graphs ---------------------------------------------------------------------------------------------------------------------------------
 
-# swift tuttle -- good interval ------------------------------
-'''
-
-# swift tuttle conds for 5d space
-conds_swift_tuttle = [True, 26.0920694978266, 
-                      True, 0.963225755046038,
-                      True, 113.453816997171, 
-                      True, 152.9821676305871,
-                      True, 139.3811920815948]
-
-
-print("\n-----------------------------------------------------------\nSWIFT-TUTTLE")
-
-unit_per_volume_list = []
-volume_list = []
-
-# make the largest interval and then narrow from there!
-modifiers_5d = [0.2,
-                20]
-
-dataframe = get_number_per_unit_volume(modifiers_5d, conds_swift_tuttle)
-
-for idx in range(35):
-
-    ndo5d = narrow_dataframe_orbital_5d(dataframe, modifiers_5d, conds_swift_tuttle)
-    units_per_vol = len(ndo5d[1]) / ndo5d[0]
-    volume = ndo5d[0]
-
-    unit_per_volume_list.append(units_per_vol)
-    volume_list.append(volume)
-
-    print()
-    print("modifiers    :", modifiers_5d)
-    print('# candidates :', len(ndo5d[1]))
-    print('volume       :', volume)
-    print('# / v        :', units_per_vol)
-
-    if idx >= 30:
-        print('candidate list:', ndo5d[1])
-
-    modifiers_5d[0] -= 0.005 
-    modifiers_5d[1] -=  0.5
-
-vol_list_log = []
-upv_list_log = []
-
-for j in range(len(volume_list)):
-  try:
-    log_vol = math.log(volume_list[j])
-    log_npv = math.log(unit_per_volume_list[j])
-    upv_list_log.append(log_npv)
-    vol_list_log.append(log_vol)
-  except ValueError as e:
-    print("math domain error, npuv is negative or = 0")
-
-graph = plt.plot(vol_list_log, upv_list_log)
-plt.xlabel("volume (ln)")
-plt.ylabel("number per unit volume (ln)")
-plt.title("npuv 5d : swift-tuttle")
-plt.grid()
-plt.show()
-'''
 # bennu -- good interval ------------------------------------------------------------------------------------------------------
 
 # conditions for 5d space, a e i peri node
@@ -465,7 +368,7 @@ bennu_from_horizon_updated = Meteor('Bennu', 0.2037482514536186, 0.89654206, 6.0
 index = 0
 
 print("\n-----------------------------------------------------------")
-print("BENNU")
+print("Bennu")
 
 unit_per_volume_list = []
 volume_list = []
@@ -476,6 +379,8 @@ modifiers_5d = [0.2,
 
 get_npuv = get_number_per_unit_volume(modifiers_5d, conds_bennu)
 dataframe = get_npuv[0]
+unit_per_volume_list = get_npuv[2]
+volume_list = get_npuv[3]
 
 for idx in range(20):
 
@@ -499,6 +404,13 @@ for idx in range(20):
 
 # print(asteroid_list)
 
+rageo_d_lessthan_1 = []
+decgeo_d_lessthan_1 = []
+d_vals_eph_sh = []
+d_vals_eph_d = []
+d_vals_hor_sh = []
+d_vals_hor_d = []
+
 # try bennu against all other potential asteroids
 for meteor_obj in get_npuv[1]:
 
@@ -507,32 +419,50 @@ for meteor_obj in get_npuv[1]:
   # Drummond function
   D_D_e = bennu_ephemeris.D_criterion(meteor_obj, version='d')
   # hybrid
-  D_HYB_e = bennu_ephemeris.D_criterion(meteor_obj, version='h')
+  #D_HYB_e = bennu_ephemeris.D_criterion(meteor_obj, version='h')
 
   # Southworth & Hawkins function
   D_SH_fhu = bennu_from_horizon_updated.D_criterion(meteor_obj)
   # Drummond function
   D_D_fhu = bennu_from_horizon_updated.D_criterion(meteor_obj, version='d')
   # hybrid
-  D_HYB_fhu = bennu_ephemeris.D_criterion(meteor_obj, version='h')
+  #D_HYB_fhu = bennu_ephemeris.D_criterion(meteor_obj, version='h')
 
   print("\n-------------")
   meteor_obj.get_attr()
+  print('rageo =', dataframe['rageo'][index])
+  print('decgeo =', dataframe['decgeo'][index])
+  print('vinit =', dataframe['vinit'][index])
 
   print("\nFROM HORIZONS (LATEST EPOCH) - 2460460.2864766")
   print('D_SH', D_SH_fhu)
   print('D_D', D_D_fhu)
-  print('D HYBRID', D_HYB_e)
+  #print('D HYBRID', D_HYB_e)
 
   print("\nEPHEMERIS - WEB APP - 2455562.5")
   print('D_SH', D_SH_e)
   print('D_D', D_D_e)
-  print('D HYBRID', D_HYB_fhu)
+  #print('D HYBRID', D_HYB_fhu)
 
   print("\nDifference")
   print("D_SH", abs(D_SH_e - D_SH_fhu))
   print("D_D", abs(D_D_e - D_D_fhu))
   print("-------------")
+
+  #if #D_SH_fhu < 1 and D_D_fhu < 1 and D_SH_e < 1 and D_D_e < 1\
+  if dataframe['rageo'][index] > 0 and dataframe['rageo'][index] < 20 \
+    and dataframe['decgeo'][index] > -50 and dataframe['decgeo'][index] < -20 :
+    #and dataframe['vinit'][index] <20:
+      
+      print("PASSED", meteor_obj.identity)
+
+      rageo_d_lessthan_1.append(dataframe['rageo'][index])
+      decgeo_d_lessthan_1.append(dataframe['decgeo'][index])
+
+      d_vals_eph_sh.append(D_SH_e)
+      d_vals_eph_d.append(D_D_e)
+      d_vals_hor_sh.append(D_SH_fhu)
+      d_vals_hor_d.append(D_D_fhu)
 
   index += 1
 
@@ -562,935 +492,79 @@ plt.title("npuv 5d : bennu (ln)")
 plt.grid()
 plt.show()
 
-# 433 eros -- good interval ------------------------------------------------------------------------------------------------------
-'''
-# conditions for 5d space, a e i peri node
-
-conds_eros = [True, 1.458177646485403, 
-              True, 0.2227072743779392, 
-              True, 10.82762857430502, 
-              True, 178.8953167089443, 
-              True, 304.2765731967428]
-
-# Asteroid(e, q, i, omega [NODE], w [PERI])
-eros = Meteor('Eros', 0.2227072743779392, 1.133430877277801, 10.82762857430502, 304.2765731967428, 178.8953167089443)
-
-index = 0
-
-print("\n-----------------------------------------------------------")
-print("EROS")
-
-unit_per_volume_list = []
-volume_list = []
-
-# make the largest interval and then narrow from there!
-modifiers_5d = [0.2,
-                20]
-
-get_npuv = get_number_per_unit_volume(modifiers_5d, conds_eros)
-dataframe = get_npuv[0]
-
-for idx in range(30):
-
-    ndo5d = narrow_dataframe_orbital_5d(dataframe, modifiers_5d, conds_eros)
-    units_per_vol = len(ndo5d[1]) / ndo5d[0]
-    volume = ndo5d[0]
-
-    unit_per_volume_list.append(units_per_vol)
-    volume_list.append(volume)
-
-    print()
-    print("modifiers    :", modifiers_5d)
-    print('# candidates :', len(ndo5d[1]))
-    print('volume       :', volume)
-    print('# / v        :', units_per_vol)
-
-    print('candidate list:', ndo5d[1])
-
-    modifiers_5d[0] -= 0.005 
-    modifiers_5d[1] -=  0.5
-
-# print(get_npuv[1])
-
-# try eros against all other potential asteroids
-for meteor_obj in get_npuv[1]:
-
-  # Southworth & Hawkins function
-  D_SH = eros.D_criterion(meteor_obj)
-  # Drummond function
-  D_D = eros.D_criterion(meteor_obj, version='d')
-
-  print("\n-------------")
-  meteor_obj.get_attr()
-
-  print("\nD VALS")
-  print('D_SH', D_SH)
-  print('D_D', D_D)
-
-  index += 1
-
-graph = plt.plot(volume_list, unit_per_volume_list)
-plt.xlabel("volume")
-plt.ylabel("number per unit volume")
-plt.title("npuv 5d : eros")
+graph = plt.plot(rageo_d_lessthan_1)
+plt.xlabel("rageo")
+plt.ylabel("number")
+plt.title("rageo")
 plt.grid()
 plt.show()
 
-vol_list_log = []
-upv_list_log = []
-
-for j in range(len(volume_list)):
-  try:
-    log_vol = math.log(volume_list[j])
-    log_npv = math.log(unit_per_volume_list[j])
-    upv_list_log.append(log_npv)
-    vol_list_log.append(log_vol)
-  except ValueError as e:
-    print("math domain error, npuv is negative or = 0")
-
-graph = plt.plot(vol_list_log, upv_list_log)
-plt.xlabel("volume (ln)")
-plt.ylabel("number per unit volume (ln)")
-plt.title("npuv 5d : eros (ln)")
-plt.grid()
-plt.show()
-'''
-# Itokawa -- good interval ------------------------------------------------------------------------------------------------------
-'''
-# conditions for 5d space, a e i peri node
-
-conds_itokawa = [True, 1.324142578587497,
-                 True, 0.2803311777299725,
-                 True, 1.621207668814055,
-                 True, 162.8211329499564, 
-                 True, 69.0761042651376]
-
-# Asteroid(e, q, i, omega [NODE], w [PERI])
-itokawa = Meteor('Itokawa', 0.2803311777299725, 0.9529441300496611, 1.621207668814055, 69.0761042651376, 162.8211329499564)
-
-index = 0
-
-print("\n-----------------------------------------------------------")
-print("ITOKAWA")
-
-unit_per_volume_list = []
-volume_list = []
-
-# make the largest interval and then narrow from there!
-modifiers_5d = [0.2,
-                20]
-
-get_npuv = get_number_per_unit_volume(modifiers_5d, conds_itokawa)
-dataframe = get_npuv[0]
-
-for idx in range(30):
-
-    ndo5d = narrow_dataframe_orbital_5d(dataframe, modifiers_5d, conds_itokawa)
-    units_per_vol = len(ndo5d[1]) / ndo5d[0]
-    volume = ndo5d[0]
-
-    unit_per_volume_list.append(units_per_vol)
-    volume_list.append(volume)
-
-    print()
-    print("modifiers    :", modifiers_5d)
-    print('# candidates :', len(ndo5d[1]))
-    print('volume       :', volume)
-    print('# / v        :', units_per_vol)
-
-    print('candidate list:', ndo5d[1])
-
-    modifiers_5d[0] -= 0.005 
-    modifiers_5d[1] -=  0.5
-
-# print(get_npuv[1])
-
-# try itokawa against all other potential asteroids
-for meteor_obj in get_npuv[1]:
-
-  # Southworth & Hawkins function
-  D_SH = itokawa.D_criterion(meteor_obj)
-  # Drummond function
-  D_D = itokawa.D_criterion(meteor_obj, version='d')
-
-  print("\n-------------")
-  meteor_obj.get_attr()
-
-  print("\nD VALS")
-  print('D_SH', D_SH)
-  print('D_D', D_D)
-
-  index += 1
-
-graph = plt.plot(volume_list, unit_per_volume_list)
-plt.xlabel("volume")
-plt.ylabel("number per unit volume")
-plt.title("npuv 5d : itokawa")
+graph = plt.plot(decgeo_d_lessthan_1)
+plt.xlabel("decgeo")
+plt.ylabel("number")
+plt.title("decgeo")
 plt.grid()
 plt.show()
 
-vol_list_log = []
-upv_list_log = []
-
-for j in range(len(volume_list)):
-  try:
-    log_vol = math.log(volume_list[j])
-    log_npv = math.log(unit_per_volume_list[j])
-    upv_list_log.append(log_npv)
-    vol_list_log.append(log_vol)
-  except ValueError as e:
-    print("math domain error, npuv is negative or = 0")
-
-graph = plt.plot(vol_list_log, upv_list_log)
-plt.xlabel("volume (ln)")
-plt.ylabel("number per unit volume (ln)")
-plt.title("npuv 5d : itokawa (ln)")
-plt.grid()
-plt.show()
-'''
-# Toutatis -- good interval ------------------------------------------------------------------------------------------------------
-'''
-# conditions for 5d space, a e i peri node
-
-conds_toutatis = [True, 2.543728029076248, 
-                  True, 0.624758896480083, 
-                  True, 0.4480680353844077, 
-                  True, 277.868771555242, 
-                  True, 125.3549352905831]
-
-# Asteroid(e, q, i, omega [NODE], w [PERI])
-toutatis = Meteor('Toutatis', 0.624758896480083, 0.9545113126851149, 0.4480680353844077, 125.3549352905831, 277.868771555242)
-
-index = 0
-
-print("\n-----------------------------------------------------------")
-print("TOUTATIS")
-
-unit_per_volume_list = []
-volume_list = []
-
-# make the largest interval and then narrow from there!
-modifiers_5d = [0.2,
-                20]
-
-get_npuv = get_number_per_unit_volume(modifiers_5d, conds_toutatis)
-dataframe = get_npuv[0]
-
-for idx in range(20):
-
-    ndo5d = narrow_dataframe_orbital_5d(dataframe, modifiers_5d, conds_toutatis)
-    units_per_vol = len(ndo5d[1]) / ndo5d[0]
-    volume = ndo5d[0]
-
-    unit_per_volume_list.append(units_per_vol)
-    volume_list.append(volume)
-
-    print()
-    print("modifiers    :", modifiers_5d)
-    print('# candidates :', len(ndo5d[1]))
-    print('volume       :', volume)
-    print('# / v        :', units_per_vol)
-
-    print('candidate list:', ndo5d[1])
-
-    modifiers_5d[0] -= 0.005 
-    modifiers_5d[1] -=  0.5
-
-# print(get_npuv[1])
-
-# try toutatis against all other potential asteroids
-for meteor_obj in get_npuv[1]:
-
-  # Southworth & Hawkins function
-  D_SH = toutatis.D_criterion(meteor_obj)
-  # Drummond function
-  D_D = toutatis.D_criterion(meteor_obj, version='d')
-
-  print("\n-------------")
-  meteor_obj.get_attr()
-
-  print("\nD VALS")
-  print('D_SH', D_SH)
-  print('D_D', D_D)
-
-  index += 1
-
-graph = plt.plot(volume_list, unit_per_volume_list)
-plt.xlabel("volume")
-plt.ylabel("number per unit volume")
-plt.title("npuv 5d : toutatis")
+graph = plt.scatter(rageo_d_lessthan_1, decgeo_d_lessthan_1)
+plt.xlabel("rageo")
+plt.ylabel("decgeo")
+plt.title("decgeo vs rageo for Bennu asteroids with D < 1")
 plt.grid()
 plt.show()
 
-vol_list_log = []
-upv_list_log = []
+# sizes
+sizes = []
+for val in d_vals_eph_sh:
+  size = 1 / val * 50
+  sizes.append(size)
 
-for j in range(len(volume_list)):
-  try:
-    log_vol = math.log(volume_list[j])
-    log_npv = math.log(unit_per_volume_list[j])
-    upv_list_log.append(log_npv)
-    vol_list_log.append(log_vol)
-  except ValueError as e:
-    print("math domain error, npuv is negative or = 0")
-
-graph = plt.plot(vol_list_log, upv_list_log)
-plt.xlabel("volume (ln)")
-plt.ylabel("number per unit volume (ln)")
-plt.title("npuv 5d : toutatis (ln)")
+graph = plt.scatter(rageo_d_lessthan_1, decgeo_d_lessthan_1, c=d_vals_eph_sh, edgecolors='black', s=sizes)
+plt.colorbar(graph)
+plt.xlabel("rageo")
+plt.ylabel("decgeo")
 plt.grid()
-plt.show()
-'''
-# Ryugu -- good interval ------------------------------------------------------------------------------------------------------
-'''
-# conditions for 5d space, a e i peri node
-
-conds_ryugu = [True, 1.191013624852465, 
-               True, 0.1910659421644889,
-               True, 5.866516749812472,
-               True, 211.6156610065788,
-               True, 251.2954193296629]
-
-# Asteroid(e, q, i, omega [NODE], w [PERI])
-ryugu = Meteor('Ryugu', 0.1910659421644889, 0.963451484489286, 5.866516749812472, 251.2954193296629, 211.6156610065788)
-
-index = 0
-
-print("\n-----------------------------------------------------------")
-print("RYUGU")
-
-unit_per_volume_list = []
-volume_list = []
-
-# make the largest interval and then narrow from there!
-modifiers_5d = [0.2,
-                20]
-
-get_npuv = get_number_per_unit_volume(modifiers_5d, conds_ryugu)
-dataframe = get_npuv[0]
-
-for idx in range(20):
-
-    ndo5d = narrow_dataframe_orbital_5d(dataframe, modifiers_5d, conds_ryugu)
-    units_per_vol = len(ndo5d[1]) / ndo5d[0]
-    volume = ndo5d[0]
-
-    unit_per_volume_list.append(units_per_vol)
-    volume_list.append(volume)
-
-    print()
-    print("modifiers    :", modifiers_5d)
-    print('# candidates :', len(ndo5d[1]))
-    print('volume       :', volume)
-    print('# / v        :', units_per_vol)
-
-    print('candidate list:', ndo5d[1])
-
-    modifiers_5d[0] -= 0.005 
-    modifiers_5d[1] -=  0.5
-
-print(get_npuv[1])
-
-# try ryugu against all other potential asteroids
-for meteor_obj in get_npuv[1]:
-
-  # Southworth & Hawkins function
-  D_SH = ryugu.D_criterion(meteor_obj)
-  # Drummond function
-  D_D = ryugu.D_criterion(meteor_obj, version='d')
-
-  print("\n-------------")
-  meteor_obj.get_attr()
-
-  print("\nD VALS")
-  print('D_SH', D_SH)
-  print('D_D', D_D)
-
-  index += 1
-
-graph = plt.plot(volume_list, unit_per_volume_list)
-plt.xlabel("volume")
-plt.ylabel("number per unit volume")
-plt.title("npuv 5d : ryugu")
-plt.grid()
+plt.title("RAgeo vs DEgeo, Ephemeris Southworth & Hawkins D-val < 1")
 plt.show()
 
-vol_list_log = []
-upv_list_log = []
+# sizes
+sizes = []
+for val in d_vals_eph_d:
+  size = 1 / val * 50
+  sizes.append(size)
 
-for j in range(len(volume_list)):
-  try:
-    log_vol = math.log(volume_list[j])
-    log_npv = math.log(unit_per_volume_list[j])
-    upv_list_log.append(log_npv)
-    vol_list_log.append(log_vol)
-  except ValueError as e:
-    print("math domain error, npuv is negative or = 0")
-
-graph = plt.plot(vol_list_log, upv_list_log)
-plt.xlabel("volume (ln)")
-plt.ylabel("number per unit volume (ln)")
-plt.title("npuv 5d : ryugu (ln)")
+graph = plt.scatter(rageo_d_lessthan_1, decgeo_d_lessthan_1, c=d_vals_eph_d, edgecolors='black', s=sizes)
+plt.colorbar(graph)
+plt.xlabel("rageo")
+plt.ylabel("decgeo")
 plt.grid()
-plt.show()
-'''
-# Didymos -- good interval ------------------------------------------------------------------------------------------------------
-'''
-# conditions for 5d space, a e i peri node
-
-conds_didymos = [True, 1.64268149873718,
-                 True, 0.3832302498647931,
-                 True, 3.414222573974985,
-                 True, 319.5916377730013,
-                 True, 72.9867658813169]
-
-                 
-# Asteroid(e, q, i, omega [NODE], w [PERI])
-didymos = Meteor('Didymos', 0.3832302498647931, 1.013156257527858, 3.414222573974985, 72.9867658813169, 319.5916377730013)
-
-index = 0
-
-print("\n-----------------------------------------------------------")
-print("DIDYMOS")
-
-unit_per_volume_list = []
-volume_list = []
-
-# make the largest interval and then narrow from there!
-modifiers_5d = [0.2,
-                20]
-
-get_npuv = get_number_per_unit_volume(modifiers_5d, conds_didymos)
-dataframe = get_npuv[0]
-
-for idx in range(20):
-
-    ndo5d = narrow_dataframe_orbital_5d(dataframe, modifiers_5d, conds_didymos)
-    units_per_vol = len(ndo5d[1]) / ndo5d[0]
-    volume = ndo5d[0]
-
-    unit_per_volume_list.append(units_per_vol)
-    volume_list.append(volume)
-
-    print()
-    print("modifiers    :", modifiers_5d)
-    print('# candidates :', len(ndo5d[1]))
-    print('volume       :', volume)
-    print('# / v        :', units_per_vol)
-
-    print('candidate list:', ndo5d[1])
-
-    modifiers_5d[0] -= 0.005 
-    modifiers_5d[1] -=  0.5
-
-print(get_npuv[1])
-
-# try didymos against all other potential asteroids
-for meteor_obj in get_npuv[1]:
-
-  # Southworth & Hawkins function
-  D_SH = didymos.D_criterion(meteor_obj)
-  # Drummond function
-  D_D = didymos.D_criterion(meteor_obj, version='d')
-
-  print("\n-------------")
-  meteor_obj.get_attr()
-
-  print("\nD VALS")
-  print('D_SH', D_SH)
-  print('D_D', D_D)
-
-  index += 1
-
-graph = plt.plot(volume_list, unit_per_volume_list)
-plt.xlabel("volume")
-plt.ylabel("number per unit volume")
-plt.title("npuv 5d : didymos")
-plt.grid()
+plt.title("RAgeo vs DEgeo, Ephemeris Drummond D-val < 1")
 plt.show()
 
-vol_list_log = []
-upv_list_log = []
+# sizes
+sizes = []
+for val in d_vals_hor_sh:
+  size = 1 / val * 50
+  sizes.append(size)
 
-for j in range(len(volume_list)):
-  try:
-    log_vol = math.log(volume_list[j])
-    log_npv = math.log(unit_per_volume_list[j])
-    upv_list_log.append(log_npv)
-    vol_list_log.append(log_vol)
-  except ValueError as e:
-    print("math domain error, npuv is negative or = 0")
-
-graph = plt.plot(vol_list_log, upv_list_log)
-plt.xlabel("volume (ln)")
-plt.ylabel("number per unit volume (ln)")
-plt.title("npuv 5d : didymos (ln)")
+graph = plt.scatter(rageo_d_lessthan_1, decgeo_d_lessthan_1, c=d_vals_hor_sh, edgecolors='black', s=sizes)
+plt.colorbar(graph)
+plt.xlabel("rageo")
+plt.ylabel("decgeo")
 plt.grid()
-plt.show()
-'''
-
-# ky26 -- good interval ------------------------------------------------------------------------------------------------------
-'''
-# conditions for 5d space, a e i peri node
-
-conds_ky26 = [True, 1.232849543905062,
-              True, 0.2018717279444665,
-              True, 1.481016973751399,
-              True, 209.363399906683,
-              True, 84.36267152662202]
-
-# Asteroid(e, q, i, omega [NODE], w [PERI])
-ky26 = Meteor('Didymos', 0.2018717279444665, 0.9839720761813993, 1.481016973751399, 84.36267152662202, 209.363399906683)
-
-index = 0
-
-print("\n-----------------------------------------------------------")
-print("1998 KY26")
-
-unit_per_volume_list = []
-volume_list = []
-
-# make the largest interval and then narrow from there!
-modifiers_5d = [0.2,
-                20]
-
-get_npuv = get_number_per_unit_volume(modifiers_5d, conds_ky26)
-dataframe = get_npuv[0]
-
-for idx in range(20):
-
-    ndo5d = narrow_dataframe_orbital_5d(dataframe, modifiers_5d, conds_ky26)
-    units_per_vol = len(ndo5d[1]) / ndo5d[0]
-    volume = ndo5d[0]
-
-    unit_per_volume_list.append(units_per_vol)
-    volume_list.append(volume)
-
-    print()
-    print("modifiers    :", modifiers_5d)
-    print('# candidates :', len(ndo5d[1]))
-    print('volume       :', volume)
-    print('# / v        :', units_per_vol)
-
-    print('candidate list:', ndo5d[1])
-
-    modifiers_5d[0] -= 0.005 
-    modifiers_5d[1] -=  0.5
-
-print(get_npuv[1])
-
-# try ky26 against all other potential asteroids
-for meteor_obj in get_npuv[1]:
-
-  # Southworth & Hawkins function
-  D_SH = ky26.D_criterion(meteor_obj)
-  # Drummond function
-  D_D = ky26.D_criterion(meteor_obj, version='d')
-
-  print("\n-------------")
-  meteor_obj.get_attr()
-
-  print("\nD VALS")
-  print('D_SH', D_SH)
-  print('D_D', D_D)
-
-  index += 1
-
-graph = plt.plot(volume_list, unit_per_volume_list)
-plt.xlabel("volume")
-plt.ylabel("number per unit volume")
-plt.title("npuv 5d : ky26")
-plt.grid()
+plt.title("RAgeo vs DEgeo, Horizons Southworth & Hawkins D-val < 1")
 plt.show()
 
-vol_list_log = []
-upv_list_log = []
+# sizes
+sizes = []
+for val in d_vals_hor_d:
+  size = 1 / val * 50
+  sizes.append(size)
 
-for j in range(len(volume_list)):
-  try:
-    log_vol = math.log(volume_list[j])
-    log_npv = math.log(unit_per_volume_list[j])
-    upv_list_log.append(log_npv)
-    vol_list_log.append(log_vol)
-  except ValueError as e:
-    print("math domain error, npuv is negative or = 0")
-
-graph = plt.plot(vol_list_log, upv_list_log)
-plt.xlabel("volume (ln)")
-plt.ylabel("number per unit volume (ln)")
-plt.title("npuv 5d : ky26 (ln)")
+graph = plt.scatter(rageo_d_lessthan_1, decgeo_d_lessthan_1, c=d_vals_hor_d, edgecolors='black', s=sizes)
+plt.colorbar(graph)
+plt.xlabel("rageo")
+plt.ylabel("decgeo")
 plt.grid()
+plt.title("RAgeo vs DEgeo, Horizons Drummond D-val < 1")
 plt.show()
-'''
-# Kamo`oalewa -- good interval ------------------------------------------------------------------------------------------------------
-'''
-# conditions for 5d space, a e i peri node
-
-conds_kamo_oalewa = [True, 1.000942780042978,
-                     True, 0.1026866211272175,
-                     True, 7.796052783093273,
-                     True, 305.047752740526,
-                     True, 65.79070140817294]
-
-# Asteroid(e, q, i, omega [NODE], w [PERI])
-kamo_oalewa = Meteor('Kamo`oalewa', 0.1026866211272175, 0.1026866211272175, 7.796052783093273, 65.79070140817294, 305.047752740526)
-
-index = 0
-
-print("\n-----------------------------------------------------------")
-print("Kamo`oalewa")
-
-unit_per_volume_list = []
-volume_list = []
-
-# make the largest interval and then narrow from there!
-modifiers_5d = [0.2,
-                20]
-
-get_npuv = get_number_per_unit_volume(modifiers_5d, conds_kamo_oalewa)
-dataframe = get_npuv[0]
-
-for idx in range(20):
-
-    ndo5d = narrow_dataframe_orbital_5d(dataframe, modifiers_5d, conds_kamo_oalewa)
-    units_per_vol = len(ndo5d[1]) / ndo5d[0]
-    volume = ndo5d[0]
-
-    unit_per_volume_list.append(units_per_vol)
-    volume_list.append(volume)
-
-    print()
-    print("modifiers    :", modifiers_5d)
-    print('# candidates :', len(ndo5d[1]))
-    print('volume       :', volume)
-    print('# / v        :', units_per_vol)
-
-    print('candidate list:', ndo5d[1])
-
-    modifiers_5d[0] -= 0.005 
-    modifiers_5d[1] -=  0.5
-
-print(get_npuv[1])
-
-# try Kamo`oalewa against all other potential asteroids
-for meteor_obj in get_npuv[1]:
-
-  # Southworth & Hawkins function
-  D_SH = kamo_oalewa.D_criterion(meteor_obj)
-  # Drummond function
-  D_D = kamo_oalewa.D_criterion(meteor_obj, version='d')
-
-  print("\n-------------")
-  meteor_obj.get_attr()
-
-  print("\nD VALS")
-  print('D_SH', D_SH)
-  print('D_D', D_D)
-
-  index += 1
-
-graph = plt.plot(volume_list, unit_per_volume_list)
-plt.xlabel("volume")
-plt.ylabel("number per unit volume")
-plt.title("npuv 5d : Kamo`oalewa")
-plt.grid()
-plt.show()
-
-vol_list_log = []
-upv_list_log = []
-
-for j in range(len(volume_list)):
-  try:
-    log_vol = math.log(volume_list[j])
-    log_npv = math.log(unit_per_volume_list[j])
-    upv_list_log.append(log_npv)
-    vol_list_log.append(log_vol)
-  except ValueError as e:
-    print("math domain error, npuv is negative or = 0")
-
-graph = plt.plot(vol_list_log, upv_list_log)
-plt.xlabel("volume (ln)")
-plt.ylabel("number per unit volume (ln)")
-plt.title("npuv 5d : Kamo`oalewa (ln)")
-plt.grid()
-plt.show()
-'''
-# Cruithne -- good interval ------------------------------------------------------------------------------------------------------
-'''
-# conditions for 5d space, a e i peri node
-
-conds_cruithne= [True, 0.997751694813871,
-                 True, 0.5148730506697846,
-                 True, 19.8024438623418,
-                 True, 43.88297234753313,
-                 True, 126.1950905131228]
-
-# Asteroid(e, q, i, omega [NODE], w [PERI])
-cruithne = Meteor('Cruithne', 0.5148730506697846, 0.4840362358941053, 19.8024438623418, 126.1950905131228, 43.88297234753313)
-
-index = 0
-
-print("\n-----------------------------------------------------------")
-print("Cruithne")
-
-unit_per_volume_list = []
-volume_list = []
-
-# make the largest interval and then narrow from there!
-modifiers_5d = [0.2,
-                20]
-
-get_npuv = get_number_per_unit_volume(modifiers_5d, conds_cruithne)
-dataframe = get_npuv[0]
-
-for idx in range(20):
-
-    ndo5d = narrow_dataframe_orbital_5d(dataframe, modifiers_5d, conds_cruithne)
-    units_per_vol = len(ndo5d[1]) / ndo5d[0]
-    volume = ndo5d[0]
-
-    unit_per_volume_list.append(units_per_vol)
-    volume_list.append(volume)
-
-    print()
-    print("modifiers    :", modifiers_5d)
-    print('# candidates :', len(ndo5d[1]))
-    print('volume       :', volume)
-    print('# / v        :', units_per_vol)
-
-    print('candidate list:', ndo5d[1])
-
-    modifiers_5d[0] -= 0.005 
-    modifiers_5d[1] -=  0.5
-
-print(get_npuv[1])
-
-# try Cruithne against all other potential asteroids
-for meteor_obj in get_npuv[1]:
-
-  # Southworth & Hawkins function
-  D_SH = cruithne.D_criterion(meteor_obj)
-  # Drummond function
-  D_D = cruithne.D_criterion(meteor_obj, version='d')
-
-  print("\n-------------")
-  meteor_obj.get_attr()
-
-  print("\nD VALS")
-  print('D_SH', D_SH)
-  print('D_D', D_D)
-
-  index += 1
-
-graph = plt.plot(volume_list, unit_per_volume_list)
-plt.xlabel("volume")
-plt.ylabel("number per unit volume")
-plt.title("npuv 5d : Cruithne")
-plt.grid()
-plt.show()
-
-vol_list_log = []
-upv_list_log = []
-
-for j in range(len(volume_list)):
-  try:
-    log_vol = math.log(volume_list[j])
-    log_npv = math.log(unit_per_volume_list[j])
-    upv_list_log.append(log_npv)
-    vol_list_log.append(log_vol)
-  except ValueError as e:
-    print("math domain error, npuv is negative or = 0")
-
-graph = plt.plot(vol_list_log, upv_list_log)
-plt.xlabel("volume (ln)")
-plt.ylabel("number per unit volume (ln)")
-plt.title("npuv 5d : Cruithne (ln)")
-plt.grid()
-plt.show()
-'''
-# 2019 VL5 -- good interval ------------------------------------------------------------------------------------------------------
-'''
-# conditions for 5d space, a e i peri node
-
-conds_vl5 = [True, 0.9990750251003194, 
-             True, 0.2789646800281618,
-             True, 1.736604995346983,
-             True, 237.6861184521349,
-             True, 279.2998965781997]
-
-# Asteroid(e, q, i, omega [NODE], w [PERI])
-vl5 = Meteor('VL5', 0.2789646800281618, 0.7203683803990811, 1.736604995346983, 237.6861184521349, 279.2998965781997)
-
-index = 0
-
-print("\n-----------------------------------------------------------")
-print("2019 VL5")
-
-unit_per_volume_list = []
-volume_list = []
-
-# make the largest interval and then narrow from there!
-modifiers_5d = [0.2,
-                20]
-
-get_npuv = get_number_per_unit_volume(modifiers_5d, conds_vl5)
-dataframe = get_npuv[0]
-
-for idx in range(30):
-
-    ndo5d = narrow_dataframe_orbital_5d(dataframe, modifiers_5d, conds_vl5)
-    units_per_vol = len(ndo5d[1]) / ndo5d[0]
-    volume = ndo5d[0]
-
-    unit_per_volume_list.append(units_per_vol)
-    volume_list.append(volume)
-
-    print()
-    print("modifiers    :", modifiers_5d)
-    print('# candidates :', len(ndo5d[1]))
-    print('volume       :', volume)
-    print('# / v        :', units_per_vol)
-
-    print('candidate list:', ndo5d[1])
-
-    modifiers_5d[0] -= 0.005 
-    modifiers_5d[1] -=  0.5
-
-# print(get_npuv[1])
-
-# try 2019 VL5 against all other potential asteroids
-for meteor_obj in get_npuv[1]:
-
-  # Southworth & Hawkins function
-  D_SH = vl5.D_criterion(meteor_obj)
-  # Drummond function
-  D_D = vl5.D_criterion(meteor_obj, version='d')
-
-  print("\n-------------")
-  meteor_obj.get_attr()
-
-  print("\nD VALS")
-  print('D_SH', D_SH)
-  print('D_D', D_D)
-
-  index += 1
-
-graph = plt.plot(volume_list, unit_per_volume_list)
-plt.xlabel("volume")
-plt.ylabel("number per unit volume")
-plt.title("npuv 5d : 2019 VL5")
-plt.grid()
-plt.show()
-
-vol_list_log = []
-upv_list_log = []
-
-for j in range(len(volume_list)):
-  try:
-    log_vol = math.log(volume_list[j])
-    log_npv = math.log(unit_per_volume_list[j])
-    upv_list_log.append(log_npv)
-    vol_list_log.append(log_vol)
-  except ValueError as e:
-    print("math domain error, npuv is negative or = 0")
-
-graph = plt.plot(vol_list_log, upv_list_log)
-plt.xlabel("volume (ln)")
-plt.ylabel("number per unit volume (ln)")
-plt.title("npuv 5d : 2019 VL5 (ln)")
-plt.grid()
-plt.show()
-'''
-# 2001 CC21 -- good interval ------------------------------------------------------------------------------------------------------
-'''
-# conditions for 5d space, a e i peri node
-
-conds_cc21 = [True, 1.032326006473957,
-              True, 0.2192516988918617,
-              True, 4.80766125895221,
-              True, 179.4306792644965,
-              True, 75.45460154781179]
-
-# Asteroid(e, q, i, omega [NODE], w [PERI])
-cc21 = Meteor('cc21', 0.2192516988918617, 0.8059867757442905, 4.80766125895221, 75.45460154781179, 179.4306792644965)
-
-index = 0
-
-print("\n-----------------------------------------------------------")
-print("CC21")
-
-unit_per_volume_list = []
-volume_list = []
-
-# make the largest interval and then narrow from there!
-modifiers_5d = [0.2,
-                20]
-
-get_npuv = get_number_per_unit_volume(modifiers_5d, conds_cc21)
-dataframe = get_npuv[0]
-
-for idx in range(30):
-
-    ndo5d = narrow_dataframe_orbital_5d(dataframe, modifiers_5d, conds_cc21)
-    units_per_vol = len(ndo5d[1]) / ndo5d[0]
-    volume = ndo5d[0]
-
-    unit_per_volume_list.append(units_per_vol)
-    volume_list.append(volume)
-
-    print()
-    print("modifiers    :", modifiers_5d)
-    print('# candidates :', len(ndo5d[1]))
-    print('volume       :', volume)
-    print('# / v        :', units_per_vol)
-
-    print('candidate list:', ndo5d[1])
-
-    modifiers_5d[0] -= 0.005 
-    modifiers_5d[1] -=  0.5
-
-# print(get_npuv[1])
-
-# try cc21 against all other potential asteroids
-for meteor_obj in get_npuv[1]:
-
-  # Southworth & Hawkins function
-  D_SH = cc21.D_criterion(meteor_obj)
-  # Drummond function
-  D_D = cc21.D_criterion(meteor_obj, version='d')
-
-  print("\n-------------")
-  meteor_obj.get_attr()
-
-  print("\nD VALS")
-  print('D_SH', D_SH)
-  print('D_D', D_D)
-
-  index += 1
-
-graph = plt.plot(volume_list, unit_per_volume_list)
-plt.xlabel("volume")
-plt.ylabel("number per unit volume")
-plt.title("npuv 5d : cc21")
-plt.grid()
-plt.show()
-
-vol_list_log = []
-upv_list_log = []
-
-for j in range(len(volume_list)):
-  try:
-    log_vol = math.log(volume_list[j])
-    log_npv = math.log(unit_per_volume_list[j])
-    upv_list_log.append(log_npv)
-    vol_list_log.append(log_vol)
-  except ValueError as e:
-    print("math domain error, npuv is negative or = 0")
-
-graph = plt.plot(vol_list_log, upv_list_log)
-plt.xlabel("volume (ln)")
-plt.ylabel("number per unit volume (ln)")
-plt.title("npuv 5d : cc21 (ln)")
-plt.grid()
-plt.show()
-'''
