@@ -5,7 +5,7 @@ GMN Datamining
 Vanessa Tran
 ----------------------------------------
 
-Summer 2024 (May 1st - Aug 16th)
+Summer 2024 (May 1st - Aug 14th)
 
 Supervisor: Dr. Paul Wiegert
 
