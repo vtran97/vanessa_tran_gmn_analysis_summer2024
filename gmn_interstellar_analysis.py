@@ -15,6 +15,8 @@ with following conditions:
 Conditions arguments can be inputted to narrow/broaden the search. print statements separate and optional.
 
 See "How-To : Access files for GMN for Datamining" in References in GitHub
+See Interstellar Reductions Stats (xlsx)
+See Potential Interstellars (xslx)
 '''
 
 # -----------------------------------------------------------------------------------------------------------

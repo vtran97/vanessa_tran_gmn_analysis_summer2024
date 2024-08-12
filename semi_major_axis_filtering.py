@@ -4,7 +4,7 @@ GMN datamining
 Vanessa Tran (vtran97@uwo.ca)
 May 1st to August 16 (2024)
 
-Just filtering the semi major axis to see if there's a normal distribution (there isn't) 
+Filtering the semi major axis to see if there's a normal distribution around a particular a value
 '''
 
 # -----------------------------------------------------------------------------------------------------------

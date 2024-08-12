@@ -5,9 +5,18 @@ Vanessa Tran (vtran97@uwo.ca)
 May 1st to August 16 (2024)
 
 Meteor class for checking against other asteroid orbital elemnts and orbit
+- init takes in identity name (can be used for hash)
+- prints attributes 
+- get D criterion **adapted for manually inputted GMN data
+    - Drummond
+    - Southworth-Hawkins
+    - Hybrid (not used)
+
+Meteor with Uncertainties Class
+- used for rebound clones -- same methods, more attributes in the init
 '''
 
-# -------------------------------------------------------------------------------------
+# -------------------------------------------
 # imports - DO NOT DELETE!!!
 
 import numpy as np
@@ -27,6 +36,7 @@ class Meteor:
         self.peri = peri
 
     def get_attr(self):
+        '''print all attributes'''
         print('identity :', self.identity)
         print('e =', self.e)
         print('q =', self.q)
@@ -35,11 +45,12 @@ class Meteor:
         print('peri =', self.peri)
     
     def D_criterion(self, obj, version='sh'):
-        # THIS FUNCTION IS ADAPTED FROM ORIGINAL FUNCTION FROM SBPY !!! using self and obj instead 
+        '''
+        THIS FUNCTION IS ADAPTED FROM ORIGINAL FUNCTION FROM SBPY !!! using self and obj instead 
         # of strictly orbit class that takes info from Horizons 
         # -- Mommert, Kelley, de Val-Borro, Li et al. (2019), Journal of Open Source Software, 4(38), 1426
 
-        """Evaluate orbit similarity D-criterion
+        Evaluate orbit similarity D-criterion
 
         Three different versions of D-criterion are defined and often compared
         to each other, includingthe Southworth-Hawkins function [SH63]_,
@@ -77,7 +88,7 @@ class Meteor:
            M. D., eds.), Cambridge, UK: Cambridge University Press, 210-234.
            <https://ui.adsabs.harvard.edu/abs/2019msme.book..210W/abstract>`_
 
-        """
+        '''
 
         # sh --> southwarth-hawkins fn, d --> drummond fn
         if version.lower() not in ['sh', 'd', 'h']:
@@ -127,19 +138,21 @@ class Meteor:
                 # Southworth-Hawkins function
                 d2 = diff_e**2 + (diff_q**2) + 4 * sin_i2 + (sum_e * np.sin(pi_ba / 2))**2
 
-            '''else:
+            else:
                 # hybrid function
                 #register(self.D_criterion, {'method': '1993Icar..106..603J'})
                 d2 = diff_e**2 + (diff_q / sum_q)**2 + 4 * sin_i2 \
-                    + (sum_e * np.sin(pi_ba / 2))**2'''
+                    + (sum_e * np.sin(pi_ba / 2))**2
                 
         d = np.sqrt(d2)
         return d
     
 class Meteor_With_Uncertainties(Meteor):
-    '''obj = Meteor(identity, e, q, i, node, peri)'''
+    '''separate meteor class for the rebound simulations with meteor uncertainties'''
 
-    def __init__(self, identity='', a=0, a_sigma=0, e=0, e_sigma=0, q=0, q_sigma=0, i=0, i_sigma=0, node=0, node_sigma=0, peri=0, peri_sigma=0, mean_anomaly=0, mass=0):
+    def __init__(self, identity='', a=0, a_sigma=0, e=0, e_sigma=0, q=0, q_sigma=0, i=0, i_sigma=0, node=0, 
+                 node_sigma=0, peri=0, peri_sigma=0, mean_anomaly=0, mass=0):
+        
         self.identity = identity
         self.a = a
         self.a_sigma = a_sigma

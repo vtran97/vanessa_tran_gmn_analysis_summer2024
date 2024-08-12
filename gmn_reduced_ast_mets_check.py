@@ -1,3 +1,13 @@
+'''
+Reduced Asteorids for Orbital Elements 
+
+Vanessa Tran (vtran97@uwo.ca)
+May 1st to August 16 (2024)
+
+Main question : Does the reduction of slower meteors change the orbital elements a lot, 
+or are we able to just pull the data as it comes out from the GMN? 
+'''
+
 # -----------------------------------------------------------------------------------------------------------
 # imports - DO NOT DELETE!!!
 

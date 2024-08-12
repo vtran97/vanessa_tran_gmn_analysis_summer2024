@@ -11,9 +11,8 @@ min and max values
     - the function D_Criterion is edited; to work with GMN data, it has been changed to work 
       with self and obj instead of with two bodies given through the from_horizons function of 
       the Orbit class from sbpy
-    - the order of self nad obj DOES NOT matter -- it will give you the same value no matter 
+    - the order of self and obj DOES NOT matter -- it will give you the same value no matter 
       which way you decide to type your self/obj order
-    - 
 '''
 
 # -----------------------------------------------------------------------------------------------------------

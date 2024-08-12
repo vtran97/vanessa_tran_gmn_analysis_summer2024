@@ -1,3 +1,18 @@
+'''
+GMN datamining 
+
+Vanessa Tran (vtran97@uwo.ca)
+May 1st to August 16 (2024)
+
+Gte the number per unit volume of meteors in a 5d volume space; we expect that the background 
+for such meteors should be a bit less, and then there should be a peak that shows a concentration of 
+meteors for where we are triyng to look. 
+
+Meteors such as Bennu/Itokawa might not have as many meteors that share teh same range of orbital element 
+values-- Swift Tuttle is a test subject that can be used to clearly see the peak at a certain 
+range of orbital element values. 
+'''
+
 # -----------------------------------------------------------------------------------------------------------
 # imports - DO NOT DELETE!!!
 
@@ -26,6 +41,11 @@ plt.rcParams.update({'font.size':30})
 # function
 
 def get_npuv_and_d_vals(name, conds, meteor_obj, mods):
+    '''
+    conds : True, if active. 
+            the value for the orbital element (ex. a = 1.0)
+    mods: outer ranges of the elements that we want to start from, and then narrow down from
+    '''
 
     print("----------------------------------------------------------------------------------------------------")
     print(name)
@@ -336,6 +356,7 @@ conds_apophis = [True, 0.922552140675628,
 apophis = Meteor('Apophis', 0.1912907261004625, 0.7460764718202511, 3.339736385186364, 203.9153721810904, 126.6832317899634)
 graphs = get_npuv_and_d_vals('Apophis', conds_apophis, apophis, modifiers_5d)
 '''
+
 plt.xlabel("volume")
 plt.ylabel("number per unit volume")
 plt.title("npuv 5d (normal scale)")

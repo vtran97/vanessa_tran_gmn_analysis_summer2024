@@ -1,8 +1,10 @@
 '''
 Rebound Simulations 
-Vanessa Tran
 
-Does the D value reduce over time? 
+Vanessa Tran (vtran97@uwo.ca)
+May 1st to August 16 (2024)
+
+Main question : Does the D value reduce over time? 
 
 Process Notes:
 
@@ -11,6 +13,16 @@ The orbit from GMN is automatically computed for an earlier time 60 days before 
     already been accounted for. This means that when you start the simulation of the meteor
     - you should actually use the orbital elements for Bennu, the planets, etc as they were 60 days 
     *before* the meteor actually occured
+
+get_date_from_identifier & get_date_sixty_days_before : 
+- Get NASA data from 60 days prior to the meteor by inputting the meteor name as they are in GMN data
+
+simulate one meteoroid :
+- simulate one meteor given the Meteor with Uncertainties obj, the goal asteroid (just
+    the name and the mass), the date for the meteor sixty days before, and the simulation end time (in years)
+
+to simulate clones :
+- graphs output in batches of 10 clones for D_D (Drummond) function and D_SH (South/Hawk) functions
 '''
 
 # Imports
