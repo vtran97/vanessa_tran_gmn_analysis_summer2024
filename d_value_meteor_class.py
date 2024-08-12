@@ -127,11 +127,11 @@ class Meteor:
                 # Southworth-Hawkins function
                 d2 = diff_e**2 + (diff_q**2) + 4 * sin_i2 + (sum_e * np.sin(pi_ba / 2))**2
 
-            else:
+            '''else:
                 # hybrid function
                 #register(self.D_criterion, {'method': '1993Icar..106..603J'})
                 d2 = diff_e**2 + (diff_q / sum_q)**2 + 4 * sin_i2 \
-                    + (sum_e * np.sin(pi_ba / 2))**2
+                    + (sum_e * np.sin(pi_ba / 2))**2'''
                 
         d = np.sqrt(d2)
         return d

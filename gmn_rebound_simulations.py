@@ -133,7 +133,7 @@ def simulate_one_meteoroid(meteor_obj, goal_asteroid, date, simulation_end_time)
     sim.move_to_com()  # We always move to the center of momentum frame before an integration
 
     # simulation_end_time is the simulation endtime in normal years
-    Noutputs = 10000
+    Noutputs = 1000
 
     year = 2.0 * np.pi  # One year in units where G=1s
     times = np.linspace(0, simulation_end_time*year, num=Noutputs)
@@ -172,8 +172,8 @@ def simulate_one_meteoroid(meteor_obj, goal_asteroid, date, simulation_end_time)
 
     # Integrate over time
     for i, time in enumerate(times):
-        if i%500==0:
-            print(f"loop iter = {i}, {time}")
+        if i%50==0:
+            print(f"loop iter = {i}, year = {time / (2 * np.pi)}")
 
         sim.integrate(time)
 
@@ -246,7 +246,13 @@ def simulate_one_meteoroid(meteor_obj, goal_asteroid, date, simulation_end_time)
     df.loc[df["inc_met"] > (0.5*np.pi), "inc_met"] = np.abs(df["inc_met"] - np.pi)
     df.loc[df["inc_jup"] > (0.5*np.pi), "inc_jup"] = np.abs(df["inc_jup"] - np.pi)
     df["P_met"] = df["P_met"] / (2*np.pi)'''
-    return df
+
+    df2 = pd.DataFrame({"d_sh" : d_sh,
+                       "d_d" : d_d,
+                       "year": output_year})
+    return df2
+
+# simulating clones in batches of 10 with d_d and d_sh
 
 def simulate_meteor_clone(meteor_obj, goal_asteroid, date, simulation_end_time):
     '''take uncertainties given for meteor and create clones'''
@@ -319,18 +325,31 @@ def simulate_meteor_clone(meteor_obj, goal_asteroid, date, simulation_end_time):
 
 # ------------------------------------------------------------------------------------------------------------------------------
 
-# all values are taken directly from GMN, values in deg will be converted later
+# MAIN BODIES 
+'''
+We only need the masses and their names--
+- make sure that their names can be found on Horizons with only their name (or else use a different search method)
+- some asteroids have no mass, so just enter its mass manually in solar masses to avoid errors
+'''
+
 bennu = Meteor_With_Uncertainties(identity="Bennu", 
-                                  a=1.1263910258948120, 
-                                  e=0.2037450762416414,  
-                                  q=0.8968944004459729, 
-                                  i=6.03494377024794, 
-                                  node=2.06086619569642, 
-                                  peri=66.22306084084298, 
-                                  mean_anomaly=101.7039520024729, 
                                   mass=3.6857483391753e-20) 
 
-testing_meteor = Meteor_With_Uncertainties(identity="20211004095332_z6QQZ", 
+itokawa = Meteor_With_Uncertainties(identity="Itokawa", 
+                                  mass=1.7651762410295e-20) 
+
+ryugu = Meteor_With_Uncertainties(identity="Ryugu", 
+                                  mass=2.2630464628584e-19) 
+
+# TESTING BODIES -- manually inputted from spreadsheets -- Denis and Tam have something for this soon? 
+'''
+We need everything for these asteroids; try to get most of the parameters!
+The normal parameters shoud not be == 0, but the uncertainties can be :)
+'''
+
+# Bennu testing meteors
+
+bennu_testing_meteor_1 = Meteor_With_Uncertainties(identity="20211004095332_z6QQZ", 
                                            a=1.191079, 
                                            a_sigma=0.0047,
                                            e=0.230653,
@@ -345,62 +364,245 @@ testing_meteor = Meteor_With_Uncertainties(identity="20211004095332_z6QQZ",
                                            peri_sigma=1.4337,
                                            mean_anomaly=323.482034)
 
-'''testing_meteor_2 = Meteor_With_Uncertainties(identity="20231012130023_GhSWo", 
+bennu_testing_meteor_2 = Meteor_With_Uncertainties(identity="20231012130023_GhSWo", 
                                            a=1.205943, 
+                                           a_sigma=0.0020,
                                            e=0.248383,
+                                           e_sigma=0.0005,
                                            q=0.906407,
+                                           q_sigma=0.0011,
                                            i=6.428566,
+                                           i_sigma=0.0414,
                                            node=18.615142,
+                                           node_sigma=0,
                                            peri=57.440986,
-                                           mean_anomaly=324.184028)'''
+                                           peri_sigma=0.3926,
+                                           mean_anomaly=324.184028)
+
+bennu_testing_meteor_3 = Meteor_With_Uncertainties(identity="20200918105222_QJQQD", 
+                                           a=1.156575, 
+                                           a_sigma=0.0214,
+                                           e=0.206195,
+                                           e_sigma=0.0139,
+                                           q=0.918095,
+                                           q_sigma=0.0049,
+                                           i=4.617707,
+                                           i_sigma=0.2277,
+                                           node=355.698362,
+                                           node_sigma=0.0004,
+                                           peri=60.310604,
+                                           peri_sigma=3.4580,
+                                           mean_anomaly=318.647811)
+
+bennu_testing_meteor_4 = Meteor_With_Uncertainties(identity="20220924194552_2QNqs", 
+                                           a=1.196684, 
+                                           a_sigma=0.0031,
+                                           e=0.219796,
+                                           e_sigma=0.0038,
+                                           q=0.933657,
+                                           q_sigma=0.0022,
+                                           i=5.011540,
+                                           i_sigma=0.2008,
+                                           node=1.417284,
+                                           node_sigma=0.0005,
+                                           peri=52.013012,
+                                           peri_sigma=0.4611,
+                                           mean_anomaly=325.910517)
+
+bennu_testing_meteor_5 = Meteor_With_Uncertainties(identity="20221007205621_uUKdQ", 
+                                           a=1.143164, 
+                                           a_sigma=0.0111,
+                                           e=0.204139,
+                                           e_sigma=0.0057,
+                                           q=0.909799,
+                                           q_sigma=0.0021,
+                                           i=8.084077,
+                                           i_sigma=0.2673,
+                                           node=14.258978,
+                                           node_sigma=0.0001,
+                                           peri=61.892633,
+                                           peri_sigma=1.5243,
+                                           mean_anomaly=317.242564)
+
+bennu_testing_meteor_6 = Meteor_With_Uncertainties(identity="20200916213538_9JUvO", 
+                                           a=1.221601, 
+                                           a_sigma=0.0063,
+                                           e=0.259261,
+                                           e_sigma=0.0042,
+                                           q=0.904888,
+                                           q_sigma=0.0011,
+                                           i=3.118255,
+                                           i_sigma=0.1275,
+                                           node=354.148939,
+                                           node_sigma=0.0015,
+                                           peri=59.019636,
+                                           peri_sigma=0.4091,
+                                           mean_anomaly=323.946896)
+
+# itokawa testing meteors
+
+itokawa_testing_meteor_1 = Meteor_With_Uncertainties(identity="20210520215940_ZHHnb", 
+                                           a=1.269480, 
+                                           a_sigma=0.0260,
+                                           e=0.211036,
+                                           e_sigma=0.0150,
+                                           q=1.001574,
+                                           q_sigma=0.0001,
+                                           i=0.734167,
+                                           i_sigma=0.1625,
+                                           node=60.143335,
+                                           node_sigma=0.0408,
+                                           peri=159.795331,
+                                           peri_sigma=0.5558,
+                                           mean_anomaly=12.740261)
+
+itokawa_testing_meteor_2 = Meteor_With_Uncertainties(identity="20210603001754_ZBE4c", 
+                                           a=1.369336, 
+                                           a_sigma=0.0544,
+                                           e=0.260533,
+                                           e_sigma=0.0254,
+                                           q=1.012579,
+                                           q_sigma=0.0001,
+                                           i=8.433785,
+                                           i_sigma=0.7466,
+                                           node=72.408418,
+                                           node_sigma=0.0023,
+                                           peri=172.545594,
+                                           peri_sigma=0.1012,
+                                           mean_anomaly=4.207214)
+
+itokawa_testing_meteor_3 = Meteor_With_Uncertainties(identity="20220523214625_21Eg3", 
+                                           a=1.411548, 
+                                           a_sigma=0.0591,
+                                           e=0.288892,
+                                           e_sigma=0.0275,
+                                           q=1.003764,
+                                           q_sigma=0.0001,
+                                           i=0.739002,
+                                           i_sigma=0.2891,
+                                           node=62.814599,
+                                           node_sigma=0.0878,
+                                           peri=163.613816,
+                                           peri_sigma=0.5951,
+                                           mean_anomaly=8.504927)
+
+itokawa_testing_meteor_4 = Meteor_With_Uncertainties(identity="20220602005611_0AobG", 
+                                           a=1.373245, 
+                                           a_sigma=0.0095,
+                                           e=0.263924,
+                                           e_sigma=0.0052,
+                                           q=1.010812,
+                                           q_sigma=0,
+                                           i=2.057097,
+                                           i_sigma=0.0944,
+                                           node=71.342375,
+                                           node_sigma=0.0073,
+                                           peri=169.695940,
+                                           peri_sigma=0.0947,
+                                           mean_anomaly=5.722914)
+
+itokawa_testing_meteor_5 = Meteor_With_Uncertainties(identity="20230523225244_iVNdb", 
+                                           a=1.294135, 
+                                           a_sigma=0.0140,
+                                           e=0.221323,
+                                           e_sigma=0.0082,
+                                           q=1.007713,
+                                           q_sigma=0.0001,
+                                           i=1.394056,
+                                           i_sigma=0.1376,
+                                           node=62.434420,
+                                           node_sigma=0.0156,
+                                           peri=166.651893,
+                                           peri_sigma=0.2392,
+                                           mean_anomaly=8.201652)
+
+itokawa_testing_meteor_6 = Meteor_With_Uncertainties(identity="20230610075623_wjlPi", 
+                                           a=1.380508, 
+                                           a_sigma=0.0093,
+                                           e=0.266535,
+                                           e_sigma=0.0046,
+                                           q=1.012554,
+                                           q_sigma=0.0003,
+                                           i=11.505398,
+                                           i_sigma=0.1521,
+                                           node=78.916556,
+                                           node_sigma=0.0003,
+                                           peri=170.957039,
+                                           peri_sigma=0.6447,
+                                           mean_anomaly=5.041699)
+
+'''
+x_testing_meteor_# = Meteor_With_Uncertainties(identity="", 
+                                           a=, 
+                                           a_sigma=,
+                                           e=,
+                                           e_sigma=,
+                                           q=,
+                                           q_sigma=,
+                                           i=,
+                                           i_sigma=,
+                                           node=,
+                                           node_sigma=,
+                                           peri=,
+                                           peri_sigma=,
+                                           mean_anomaly=)
+
+'''
 
 #-------------------------------------------------------------------------------------------------------------------------
 
-# NUMBER OF CLONES
+# NUMBER OF CLONES -- default to 100
 number_of_clones = 100
 
-print("***************************************")
-print("main asteroid")
-testing_meteor.get_attr()
-print("***************************************\n\n***************************************")
-testing_date_start = get_date_sixty_days_before(testing_meteor)
-print('testing date', testing_date_start)
-print("***************************************\n")
+testing_date_start = get_date_sixty_days_before(itokawa_testing_meteor_5)
 testing_sim_end_time = 10000
 
 for i in range(number_of_clones):
-    simtest = simulate_meteor_clone(testing_meteor, bennu, testing_date_start, testing_sim_end_time)
 
-    # TESTING GRAPHS 
+    if i % 10 == 0:
+        
+        d_sh_10_entries = []
+        d_d_10_entries = []
+        
+    # change settings here! :)
+    # simtest = simulate_meteor_clone(manual input meteor that you want to test, main body that we want to see if it goes back to, 
+    #                                 testing_date_start, testing_sim_end_time)
+    simtest = simulate_meteor_clone(itokawa_testing_meteor_5, itokawa, testing_date_start, testing_sim_end_time)
+    
+    d_sh_entry = simtest.loc[:,'d_sh'].to_list()
+    d_d_entry = simtest.loc[:,'d_d'].to_list()
 
-    # D_SH
-    ax = simtest.plot.scatter(x='year', y='d_sh', 
-                                title="Bennu Test with D_SH: 20211004095332_z6QQZ")
-    plt.grid()
-    plt.show()
+    d_sh_10_entries.append(d_sh_entry)
+    d_d_10_entries.append(d_d_entry)
 
-    # DD
-    ax = simtest.plot.scatter(x='year', y='d_d', 
-                                title="Bennu Test with D_D: 20211004095332_z6QQZ")
-    plt.grid()
-    plt.show()
+    if i % 10 == 9 and i != 0:
 
-'''simtest = simulate_one_meteoroid(testing_meteor, bennu, testing_date_start, testing_sim_end_time)
-print(simtest)'''
+        graph_year = simtest.loc[:,'year'].to_list()
 
-'''# testing second meteor
+        fig, (ax1, ax2) = plt.subplots(2)
 
-print("***************************************")
-print("getting attrs outside of function")
-testing_meteor_2.get_attr()
-print("***************************************")
-testing_date_start = get_date_sixty_days_before(testing_meteor_2)
-print('testing date', testing_date_start)
-print("***************************************")
-testing_sim_end_time = 100000
+        ax1.set_title("D_SH")
+        ax2.set_title("D_D")
+        plt.xlabel("Year")
 
-simtest = simulate_one_meteoroid(testing_meteor, bennu, testing_date_start, testing_sim_end_time)
-print(simtest)'''
+        # change name here!
 
+        fig.suptitle(f'Itokawa Test CLONES with {itokawa_testing_meteor_5.identity}')
+        for j in range(len(d_sh_10_entries)):
+            #plt.plot(graph_year, d_sh_10_entries[j], label= 'clone #%s' %str(int(j)+1))
+            ax1.plot(graph_year, d_sh_10_entries[j], label= 'clone #%s' %str(int(j)+1))
 
+        #plt.legend(bbox_to_anchor=(1,1), loc="upper left")
+        #plt.grid()
+        
+        for k in range(len(d_d_10_entries)):
+            #plt.plot(graph_year, d_d_10_entries[k], label= 'clone #%s' %str(int(k)+1))
+            ax2.plot(graph_year, d_d_10_entries[k], label= 'clone #%s' %str(int(k)+1))
 
+        #plt.legend(bbox_to_anchor=(1,-25), loc="upper left")
+        #plt.grid()
+
+        ax1.grid()
+        ax2.grid()
+
+        plt.show()
