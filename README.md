@@ -26,6 +26,7 @@ Created Resources
 
 - Google Docs (links)
   - How-To : Access files for GMN for Datamining : https://docs.google.com/document/d/1EgE0Rqx7c11TVZOLZIWc-IrsZfIjNUAcDOCpoY1fZ-8/edit?usp=sharing
+  - Interstellar Filtering Method : https://docs.google.com/document/d/1kWUdP1ABZcQ4b9vL1sLGqWzPgsjD0CX5LdVWTRhYIgk/edit?usp=sharing
 - Excel (.xlsx)
   - Potential Interstellars
   - Interstellar Reductions Stats (**outcomes!)
