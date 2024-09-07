@@ -22,7 +22,7 @@ Resources
 - Horizons System : https://ssd.jpl.nasa.gov/horizons/app.html#/ , https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=bennu&view=VOP
 - Rebound : https://rebound.readthedocs.io/en/latest/
 
-Created Resources
+Created Resources / OUTPUTS
 
 - Google Docs (links)
   - How-To : Access files for GMN for Datamining : https://docs.google.com/document/d/1EgE0Rqx7c11TVZOLZIWc-IrsZfIjNUAcDOCpoY1fZ-8/edit?usp=sharing
