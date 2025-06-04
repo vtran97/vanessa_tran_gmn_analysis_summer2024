@@ -194,6 +194,8 @@ def histogram_a_vals():
     
     import matplotlib
 
+    print("here")
+
     plt.hist2d(ascending_nodal_cross_point_list_x, ascending_nodal_cross_point_list_y, bins=100, cmin=1, 
                norm=matplotlib.colors.LogNorm())
     plt.colorbar()

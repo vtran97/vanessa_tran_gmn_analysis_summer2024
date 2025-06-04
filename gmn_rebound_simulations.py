@@ -29,6 +29,7 @@ to simulate clones :
 
 from datetime import datetime, timedelta
 import rebound as rb
+rb.horizons.SSL_CONTEXT = 'unverified'
 import numpy as np
 import pandas as pd
 from d_value_meteor_class import Meteor, Meteor_With_Uncertainties
@@ -82,12 +83,12 @@ def simulate_one_meteoroid(meteor_obj, goal_asteroid, date, simulation_end_time)
     # Note that rebound uses G=1 by default so a year is 2pi, m is in solar masses although horizons objects need to be added in kg, 
     # position should be in AU and velocity in AU/year
 
-    # Masses in solar masses
+    # Masses in SOLAR MASSES
     sim.add("Sun", date=date, m=1.0, hash="Sun")
     sim.add("Mercury", date=date, m=1.6601141530543488e-07, hash="Mercury")
     sim.add("Venus", date=date, m=2.4478382877847715e-06, hash="Venus")
     sim.add("Geocenter", date=date, m=3.0034896149157645e-06, hash="Earth")
-    #sim.add("Luna", date=date, m=3.694303310687701e-08, hash="Luna")
+    sim.add("Luna", date=date, m=3.694303310687701e-08, hash="Luna")
     sim.add("Mars", date=date, m=3.2271560375549977e-07, hash="Mars")
     sim.add("Jupiter", date=date, m=0.0009547919152112404, hash="Jupiter")
     sim.add("Saturn", date=date, m=0.0002858856727222417, hash="Saturn")

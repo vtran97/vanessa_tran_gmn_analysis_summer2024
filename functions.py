@@ -17,6 +17,8 @@ you don't have to loop through them all manually (done by just making a bunch of
 into one at the end, but long term this is not effective)
 '''
 
+import itertools
+
 # getting dates
 from datetime import datetime
 
@@ -104,14 +106,15 @@ def check_conditions_interstellar(value, value_cutoff,
 print output for potential interstellar meteors
 '''
 
-def print_output_interstellar(value=0, value_cutoff=5, 
-                 vhel=0, vhel_cutoff=50, 
-                 vhel_sigma=0, 
-                 vinit=0, vinit_cutoff=50, 
-                 qc=0, 
-                 identifier="", 
-                 stations='', 
-                 skyfit_script_identifier=''):
+def print_output_interstellar(value, value_cutoff, 
+                              vgeo,
+                 vhel, vhel_cutoff, 
+                 vhel_sigma, 
+                 vinit, vinit_cutoff, 
+                 qc, 
+                 identifier, 
+                 stations, 
+                 skyfit_script_identifier):
     
     # length for the text splits
     cus_lens = [8,6]
@@ -120,6 +123,7 @@ def print_output_interstellar(value=0, value_cutoff=5,
 
     # prints the output give the above parameters
     output = ""
+
     if value > value_cutoff and vhel > vhel_cutoff and vinit < vinit_cutoff:
 
         ''' 
@@ -131,12 +135,19 @@ def print_output_interstellar(value=0, value_cutoff=5,
         '''
 
         # identity of meteor in GMN database
-        output += "||IDENTITY: " + str(identifier) + "|| "
-
+        output += "||IDENTITY: " + str(identifier) + "|| \n"
+    
+        # vhel (heliocentric velocity) according to GMN
+        txt = str(vgeo)
+        if len(txt) <= 8: # string too short
+            while len(txt) != 8:
+                txt = txt + '0'
+        output += "\t\t||VGEO: " + txt + "|| "
+        
         # vhel (heliocentric velocity) according to GMN
         txt = str(vhel)
-        if len(txt) <= 7: # string too short
-            while len(txt) != 7:
+        if len(txt) <= 8: # string too short
+            while len(txt) != 8:
                 txt = txt + '0'
         output += "||VHEL: " + txt + "|| "
 
@@ -168,7 +179,7 @@ def print_output_interstellar(value=0, value_cutoff=5,
             res.append(iden[start : start + size])
             start += size
         txt = str(skyfit_script_identifier).split(".")[1]
-        output += "\n\t\t||SCRIPT IDENTIFIER FOR RAW: " + res[0] + "_" + res[1] + "." + txt + "|| " 
+        output += "\n\t\t||SCRIPT IDENTIFIER FOR RAW: " + res[0] + "_" + res[1] + "." + txt + "" 
 
         # stations involved in seeing the meteor
         txt = ''
@@ -178,9 +189,105 @@ def print_output_interstellar(value=0, value_cutoff=5,
                 txt += stations[station] + ","
             else:
                 txt += stations[station]
-        output += "||STATIONS: " + txt + "|| "
+        output += " " + txt + "|| \n"
 
-        print(output)
+        return output
+    
+def camextract_mobaX(identifier, stations, skyfit_script_identifier):
+    # length for the text splits
+    cus_lens = [8,6]
+    res = []
+    start = 0
+
+    # prints the output give the above parameters
+    output = ""
+
+    output += "python extract_fireball.py "
+
+    iden = str(identifier).split("_")[0]
+    for size in cus_lens:
+        res.append(iden[start : start + size])
+        start += size
+    txt = str(skyfit_script_identifier).split(".")[1]
+    output += res[0] + "_" + res[1] + "." + txt + "" 
+
+        # stations involved in seeing the meteor
+    txt = ''
+    last = len(stations) - 1
+    for station in range(len(stations)): # printing it nicely and not in list with ''
+        if stations[station] != stations[last]:
+            txt += stations[station] + ","
+        else:
+            txt += stations[station]
+    output += " " + txt + "\n"
+
+    # print(output + "\n")
+
+    return output
+
+def get_pickletraj_mobaX(file, identifier, stations, skyfit_script_identifier):
+    # length for the text splits
+    cus_lens = [4, 2, 2, 6] #YYYY MM DD HHMMSS 
+    res = []
+    start = 0
+
+    # prints the output give the above parameters
+    output = ""
+    str_prefix = "/srv/meteor-ro/rms/gmn/extracted_data/trajectories/"
+    date_format = ""
+
+    # output += str 
+
+    iden = str(identifier).split("_")[0]
+    for size in cus_lens:
+        res.append(iden[start : start + size])
+        start += size
+    txt = str(skyfit_script_identifier).split(".")[1]
+
+    date_format += res[0] + "/"
+    date_format += res[0] + res[1] + "/"
+    date_format += res[0] + res[1] + res[2] + "/"
+    date_format += res[0] + res[1] + res[2] + "_" + res[3] + "." + txt[:3] + "_" 
+
+    codes = stations
+    seen = set()
+    unique_prefixes = []
+
+    for code in codes:
+        prefix = code[:2]
+        if prefix not in seen:
+            seen.add(prefix)
+            unique_prefixes.append(prefix)
+
+    all_combinations = ['_'.join(combination) for combination in itertools.permutations(unique_prefixes)]
+
+    # Print all combinations
+    for combo in all_combinations:
+        output += str_prefix + date_format + combo + " " + "\n"
+
+    return output
+
+def format_trajectory_paths(input_file, output_file):
+    # edits format to extract all pickle files 
+
+    command_prefix = 'python -m wmpl.Formats.Pickle '
+    base_path = 'C:/Users/vtran97/GMN_GRAPH_DATA/vhel_43-44_graphs/'
+    command_suffix = ' -d -x'
+
+    with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
+        for line in infile:
+            line = line.strip()
+            if not line:
+                continue
+            basename = line.split('/')[-1]  # e.g., "20191007_072719.026_US"
+            try:
+                date, time_country = basename.split('_', 1)
+                time = time_country.split('.')[0]  # e.g., "072719"
+                new_filename = f"{date}_{time}_trajectory.pickle"
+                full_command = f'{command_prefix}{base_path}{basename}/{new_filename}{command_suffix}'
+                outfile.write(full_command + '\n')
+            except ValueError:
+                print(f"Skipping malformed line: {line}")
 
 #------------------------------------------------------------------------------------------------------------
 # orbital elements functions
