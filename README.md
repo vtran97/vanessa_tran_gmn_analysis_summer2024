@@ -6,6 +6,7 @@ Vanessa Tran
 ----------------------------------------
 
 Summer 2024 (May 1st - Aug 14th)
+Summer 2025 (May 1st - Aug 15th)
 
 Supervisor: Dr. Paul Wiegert
 
