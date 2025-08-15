@@ -1,22 +1,9 @@
 '''
 GMN datamining 
+-- new interstellar
 
 Vanessa Tran (vtran97@uwo.ca)
-May 1st to August 16 (2024)
-
-This file searches through the entire GMN database and searches for potential interstellar meteors
-with following conditions:
-    - vhel > 42
-    - error bars (vhel - sigma vhel) > 42
-    - vinit below a specified threshold
-    - vhel above a certain threshold (further narrowing)
-    - sort by Qc (convergence)
-
-Conditions arguments can be inputted to narrow/broaden the search. print statements separate and optional.
-
-See "How-To : Access files for GMN for Datamining" in References in GitHub
-See Interstellar Reductions Stats (xlsx)
-See Potential Interstellars (xslx)
+Aug 5, 2025
 '''
 
 # -----------------------------------------------------------------------------------------------------------
@@ -39,7 +26,7 @@ from datetime import datetime
 
 # get all months
 from functions import get_all_months_by_year_list, check_conditions_interstellar, \
-print_output_interstellar, camextract_mobaX, get_pickletraj_mobaX
+print_output_interstellar_withradec, camextract_mobaX, get_pickletraj_mobaX
 
 # -----------------------------------------------------------------------------------------------------------
 # color map  for graphs
@@ -72,6 +59,8 @@ system_identifiers = []
 system_vinit = []
 system_vhel = []
 system_vgeo = []
+system_ra = []
+system_dec = []
 system_calc = []
 system_qc = []
 system_stations = []
@@ -92,6 +81,8 @@ for month_list in all_months:
     vinit_best_data_for_plot = []
     vhel_best_data_for_plot = []
     vgeo_best_data_for_plot = []
+    best_ra = []
+    best_dec = []
     best_data_identifiers = []
     best_qc = []
     best_stations = []
@@ -114,6 +105,8 @@ for month_list in all_months:
         vinit = []
         vinit_sigma = []
         vgeo = []
+        ra = []
+        dec = []
         # vgeo_sigma = []
         qc = []
         stations = []
@@ -129,7 +122,7 @@ for month_list in all_months:
 
             # NOTE : ADDED ANOTHER REQUIREMENT FOR NUMBER OF CAMERAS = 3+ FOR SOLN
 
-            if vhel > 42 and vhel - traj_df['+/- (sigma.7)'][index] > 42 and traj_df['Num (stat)'][index] > 2 \
+            if vhel > 42 and vhel - traj_df['+/- (sigma.7)'][index] > 42 \
                 and traj_df['IAU (No)'][index] == -1:
 
                 # identifiers
@@ -153,6 +146,10 @@ for month_list in all_months:
                 # vinit sigma 
                 vinit_sigma.append(traj_df['+/- (sigma.26)'][index])
 
+                # ra and dec
+                ra.append(traj_df['RAgeo (deg)'][index])
+                dec.append(traj_df['DECgeo (deg)'][index])
+
                 # qc
                 qc.append(traj_df['Qc (deg)'][index])
 
@@ -172,7 +169,7 @@ for month_list in all_months:
 
         # ADJUST NARROWED CONDITIONS HERE! 
         # conditions = calc value min, vhel min (defualt 42 already due to the conditions anyway), vinit max, vhel max
-        conditions = [10, 44, 100, 45]
+        conditions = [0, 42, 1000, 1000]
 
         for number in range(len(vhel_larger_than_42)):
             value = 0
@@ -184,15 +181,9 @@ for month_list in all_months:
                 # it is a ratio to see how many errors bars above 42 that meteor is (vhel)
 
             # getting only the best data with inputted conditions (see conditions above)
-            if check_conditions_interstellar(value, conditions[0],
-                    vhel_larger_than_42[number], conditions[1],
-                    vhel_sigma[number], 
-                    vinit[number], conditions[2]) \
-                    and qc[number] > 20 \
-                    and beg_heights[number] > 50 \
-                    and beg_heights[number] < 150 \
-                    and vhel_larger_than_42[number] < conditions[3]: 
-                    # original heights : 95. 120 --> paper 50 < height < 150
+            if vhel_larger_than_42[number] > 55 and \
+                ra[number] > 285 and ra[number] < 305 and \
+                dec[number] > -30 and dec[number] < -10:
 
                 # appending to lists
                 calculation_best_data.append(value)
@@ -200,13 +191,15 @@ for month_list in all_months:
                 vhel_best_data_for_plot.append(vhel_larger_than_42[number])
                 vinit_best_data_for_plot.append(vinit[number])
                 best_data_identifiers.append(identifiers[number])
+                best_ra.append(ra[number])
+                best_dec.append(dec[number])
                 best_qc.append(qc[number])
                 best_stations.append(stations[number])
                 best_skyfit_script_identifiers.append(skyfit_script_identifiers[number])
 
                 # printing in output for the conditions specified -- separate from the appending conditions
                 output = ""
-                print(print_output_interstellar(value, conditions[0],
+                print(print_output_interstellar_withradec(
                          vgeo[number],
                          vhel_larger_than_42[number], conditions[1], 
                          vhel_sigma[number], 
@@ -214,7 +207,10 @@ for month_list in all_months:
                          qc[number], 
                          identifiers[number], 
                          stations[number], 
-                         skyfit_script_identifiers[number]))
+                         skyfit_script_identifiers[number], 
+                         ra[number], 
+                         dec[number]))
+
                 '''file.write(print_output_interstellar(value, conditions[0],
                          vgeo[number],
                          vhel_larger_than_42[number], conditions[1], 
@@ -258,6 +254,8 @@ for month_list in all_months:
     system_vgeo += vgeo_best_data_for_plot
     system_calc += calculation_best_data
     system_qc += best_qc
+    system_ra += best_ra
+    system_dec += best_dec
     system_stations += best_stations
     system_skyfit_script_identifiers += best_skyfit_script_identifiers
 

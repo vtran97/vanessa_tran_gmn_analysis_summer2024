@@ -108,13 +108,15 @@ print output for potential interstellar meteors
 
 def print_output_interstellar(value, value_cutoff, 
                               vgeo,
-                 vhel, vhel_cutoff, 
-                 vhel_sigma, 
-                 vinit, vinit_cutoff, 
-                 qc, 
-                 identifier, 
-                 stations, 
-                 skyfit_script_identifier):
+                            vhel, vhel_cutoff, 
+                            vhel_sigma, 
+                            vinit, vinit_cutoff, 
+                            qc, 
+                            identifier, 
+                            stations, 
+                            skyfit_script_identifier, 
+                            ra, 
+                            dec):
     
     # length for the text splits
     cus_lens = [8,6]
@@ -190,6 +192,116 @@ def print_output_interstellar(value, value_cutoff,
             else:
                 txt += stations[station]
         output += " " + txt + "|| \n"
+
+        # ra and dec
+        txt = str(ra)
+        if len(txt) <= 5: # string too short
+            while len(txt) != 5:
+                txt = txt + '0'
+        output += "||RA: " + txt + "|| "
+
+        txt = str(dec)
+        if len(txt) <= 5: # string too short
+            while len(txt) != 5:
+                txt = txt + '0'
+        output += "||DEC: " + txt + "|| +\n"
+
+        return output
+
+def print_output_interstellar_withradec(
+                              vgeo,
+                            vhel, vhel_cutoff, 
+                            vhel_sigma, 
+                            vinit, vinit_cutoff, 
+                            qc, 
+                            identifier, 
+                            stations, 
+                            skyfit_script_identifier, 
+                            ra, 
+                            dec):
+    
+    # length for the text splits
+    cus_lens = [8,6]
+    res = []
+    start = 0
+
+    # prints the output give the above parameters
+    output = ""
+
+    if vhel > vhel_cutoff and vinit < vinit_cutoff:
+
+        ''' 
+        # not needed right now -- modified to never have sigma = 0 entries 
+        if vhel_sigma_mod[number] == 0:
+            output += "||SIGMA = ZERO|| "
+        else:
+            output += "                 "
+        '''
+
+        # identity of meteor in GMN database
+        output += "||IDENTITY: " + str(identifier) + "|| \n"
+    
+        # vhel (heliocentric velocity) according to GMN
+        txt = str(vgeo)
+        if len(txt) <= 8: # string too short
+            while len(txt) != 8:
+                txt = txt + '0'
+        output += "\t\t||VGEO: " + txt + "|| "
+        
+        # vhel (heliocentric velocity) according to GMN
+        txt = str(vhel)
+        if len(txt) <= 8: # string too short
+            while len(txt) != 8:
+                txt = txt + '0'
+        output += "||VHEL: " + txt + "|| "
+
+        # the sigma (sd) of vhel in GMN
+        if vhel_sigma != 0:
+            txt = str(vhel_sigma)
+            if len(txt) <= 6: # string too short
+                while len(txt) != 6:
+                    txt += '0'
+            output += "||SIGMA (VHEL): " + txt + "|| "
+        
+        # the Qc (convergence angle) according to GMN 
+        txt = str(qc)
+        if len(txt) <= 5: # string too short
+            while len(txt) != 5:
+                txt = txt + '0'
+        output += "||QC: " + txt + "|| "
+
+        # computed value for the number of error bars above 42km/s the measure vhel is 
+
+        # specific format for raw data --> Denis Vida
+        iden = str(identifier).split("_")[0]
+        for size in cus_lens:
+            res.append(iden[start : start + size])
+            start += size
+        txt = str(skyfit_script_identifier).split(".")[1]
+        output += "\n\t\t||SCRIPT IDENTIFIER FOR RAW: " + res[0] + "_" + res[1] + "." + txt + "" 
+
+        # stations involved in seeing the meteor
+        txt = ''
+        last = len(stations) - 1
+        for station in range(len(stations)): # printing it nicely and not in list with ''
+            if stations[station] != stations[last]:
+                txt += stations[station] + ","
+            else:
+                txt += stations[station]
+        output += " " + txt + "|| \n"
+
+        # ra and dec
+        txt = str(ra)
+        if len(txt) <= 5: # string too short
+            while len(txt) != 5:
+                txt = txt + '0'
+        output += "\t\t||RA: " + txt + "|| "
+
+        txt = str(dec)
+        if len(txt) <= 5: # string too short
+            while len(txt) != 5:
+                txt = txt + '0'
+        output += "||DEC: " + txt + "|| +\n"
 
         return output
     

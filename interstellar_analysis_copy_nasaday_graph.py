@@ -60,9 +60,9 @@ white_viridis = LinearSegmentedColormap.from_list('white_viridis', [
 # -----------------------------------------------------------------------------------------------------------
 
 # using file to write all outputs
-'''file = open("fullform_45-50.txt", "w")
-file_camextract_mobaX = open("camextract_mobaX_45-50.txt", "w")
-file_get_pickletraj_mobaX = open("get_pickletraj_mobaX_45-50.txt", "w")'''
+'''file = open("fullform_43-44.txt", "w")
+file_camextract_mobaX = open("camextract_mobaX_43-44.txt", "w")
+file_get_pickletraj_mobaX = open("get_pickletraj_mobaX_43-44.txt", "w")'''
 
 # calling function 
 all_months = get_all_months_by_year_list()
@@ -114,7 +114,7 @@ for month_list in all_months:
         vinit = []
         vinit_sigma = []
         vgeo = []
-        # vgeo_sigma = []
+        vgeo_sigma = []
         qc = []
         stations = []
         skyfit_script_identifiers = []
@@ -139,7 +139,7 @@ for month_list in all_months:
                 vgeo.append(traj_df['Vgeo (km/s)'][index])
 
                 # vgeo sigma
-                # vgeo_sigma.append()
+                vgeo_sigma.append(traj_df['+/- (sigma.4)'][index])
                 
                 # vhel 
                 vhel_larger_than_42.append(vhel)
@@ -172,7 +172,7 @@ for month_list in all_months:
 
         # ADJUST NARROWED CONDITIONS HERE! 
         # conditions = calc value min, vhel min (defualt 42 already due to the conditions anyway), vinit max, vhel max
-        conditions = [10, 44, 100, 45]
+        conditions = [0, 40, 100, 100]
 
         for number in range(len(vhel_larger_than_42)):
             value = 0
@@ -206,7 +206,7 @@ for month_list in all_months:
 
                 # printing in output for the conditions specified -- separate from the appending conditions
                 output = ""
-                print(print_output_interstellar(value, conditions[0],
+                '''print(print_output_interstellar(value, conditions[0],
                          vgeo[number],
                          vhel_larger_than_42[number], conditions[1], 
                          vhel_sigma[number], 
@@ -214,7 +214,7 @@ for month_list in all_months:
                          qc[number], 
                          identifiers[number], 
                          stations[number], 
-                         skyfit_script_identifiers[number]))
+                         skyfit_script_identifiers[number]))'''
                 '''file.write(print_output_interstellar(value, conditions[0],
                          vgeo[number],
                          vhel_larger_than_42[number], conditions[1], 
@@ -234,22 +234,30 @@ for month_list in all_months:
                 
                 counter += 1
 
-    '''
+        # monthly graphs ? 
+        # plt.errorbar(vhel_larger_than_42, vgeo, vgeo_sigma, vhel_sigma, 'x', ecolor='red')
+        '''plt.rcParams.update({'font.size':20})
+        plt.errorbar(vgeo, vhel_larger_than_42, vhel_sigma, vgeo_sigma, 'x', ecolor='red')
+        plt.title(f'{year}/{month} : vgeo (km/s) vs vhel (km/s)')
+        plt.ylabel('vhel (km/s)')
+        plt.xlabel('vgeo (km/s)')
+        plt.grid()
+        plt.show()'''
+
     # YEARLY GRAPHS
-    plt.errorbar(vinit_best_data_for_plot, calculation_best_data_greater_than_50, 0, 0, 'x')
+    '''plt.errorbar(vhel_larger_than_42, vgeo, vgeo_sigma, vhel_sigma, 'x', ecolor='blue')
 
     # helps with scale
     plt.axhline(50, c='green')
     plt.axhline(200, c='blue')
     plt.axhline(5, c='red')
 
-    plt.title(f'{year} : [(vhel - 42) / sigma] vs vinit (km/s)')
-    plt.ylabel('[(vhel - 42) / sigma]')
-    plt.xlabel('vinit (km/s)')
+    plt.title(f'{year} : vgeo (km/s) vs vhel (km/s)')
+    plt.ylabel('vgeo (km/s)')
+    plt.xlabel('vhel (km/s)')
 
     plt.grid()
-    plt.show()
-    '''
+    plt.show()'''
 
     # adding to the system lists --> final lists for the final graphs at the end since this info is all by year
     system_identifiers += best_data_identifiers
@@ -289,33 +297,60 @@ print(counter)
 
 # -----------------------------------------------------------------------------------------------------------
 # GRAPH SORTED BY QC
-'''
+
 plt.rcParams.update({'font.size':30})
 
 print(counter)
 
 # creating pandas dataframe so that we can colour-code according to a third variable and identify using a fourth 
-d = {'Vinit (km/s)'      : tuple(system_vinit), 
+d = {'Vgeo (km/s)'       : tuple(system_vgeo), 
      '[(vhel - 42) / σ]' : tuple(system_calc), 
+     'Vinit (km/s)'      : tuple(system_vinit),
      'Qc (deg)'          : tuple(system_qc),
-     'Identifiers'       : tuple(system_identifiers)}
+     'Vhel (km/s)'       : tuple(system_vhel),
+     'Identifiers'       : tuple(system_identifiers)
+     }
+
 dataframe = pd.DataFrame(d)
-'''
-'''
+
+
 # creating plot using dataframe and ax
 # c = colored by Qc
-ax = dataframe.plot.scatter(x='Vinit (km/s)', y='[(vhel - 42) / σ]', 
-                            c='Qc (deg)', colormap='viridis', 
-                            title="ALL YEARS : [(vhel - 42) / σ] vs vinit (km/s)")
+ax = dataframe.plot.scatter(x='Vhel (km/s)', y='[(vhel - 42) / σ]', 
+                            c='Vgeo (km/s)', colormap='viridis', 
+                            title="ALL YEARS : [(vhel - 42) / σ] vs Vhel (km/s)")
 
 # annotate the points with anything - identifiers 
-for idx, row in dataframe.iterrows():
-    ax.annotate(row['Identifiers'], (row['Vinit (km/s)'], row['[(vhel - 42) / σ]']), 
-                xytext=(-60,10), textcoords='offset points')
+'''for idx, row in dataframe.iterrows():
+    ax.annotate(row['Identifiers'], (row['Vgeo (km/s)'], row['[(vhel - 42) / σ]']), 
+                xytext=(-60,10), textcoords='offset points')'''
+'''ax.annotate(row['Identifiers'], (row['Vgeo (km/s)'], row['[(vhel - 42) / σ]']), 
+                xytext=(-60,10), textcoords='offset points')'''
 
 plt.grid()
 plt.show()
-'''
+
+ax = dataframe.plot.scatter(x='Vgeo (km/s)', y='Vinit (km/s)', 
+                            c='Vhel (km/s)', colormap='viridis', 
+                            title="ALL YEARS : Vinit vs Vgeo (km/s)")
+x_val = list(system_vgeo)
+y_val = list(system_vinit)
+slope, intercept = np.polyfit(x_val, y_val, 1)
+# line_of_best_fit = slope * x_val + intercept
+equation_text = f'y = {slope:.2f}x + {intercept:.2f}'
+plt.text(0.05, 0.95, equation_text, transform=plt.gca().transAxes, fontsize=12,
+        verticalalignment='top', bbox=dict(boxstyle='round,pad=0.5', fc='yellow', ec='k', lw=1, alpha=0.7))
+
+# annotate the points with anything - identifiers 
+'''for idx, row in dataframe.iterrows():
+    ax.annotate(row['Identifiers'], (row['Vgeo (km/s)'], row['[(vhel - 42) / σ]']), 
+                xytext=(-60,10), textcoords='offset points')'''
+'''ax.annotate(row['Identifiers'], (row['Vgeo (km/s)'], row['[(vhel - 42) / σ]']), 
+                xytext=(-60,10), textcoords='offset points')'''
+
+plt.grid()
+plt.show()
+
 # -----------------------------------------------------------------------------------------------------------
 # DENSITY MAP
 
